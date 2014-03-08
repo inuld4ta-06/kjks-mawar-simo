@@ -2,7 +2,7 @@
 
 class mDbConn {
     
-    private $con = null;
+    public $con;
     
     public function __construct() {
         $this->con = new mysqli('localhost', 'root', 'z41nul', 'kjks_mawar_simo');
