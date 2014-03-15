@@ -16,7 +16,7 @@ $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
         define("HEADERKETERANGANSEKOLAH02", "Yayasan Pendidikan Matholi'ul Anwar");
         define("HEADERKETERANGANSEKOLAH03", "Simo Sungelebak Karanggeneng Lamongan");
         define("FOOTER_TEXT", "Copyright &copy; " . date('Y') . " by Yayasan Pendidikan Matholi'ul Anwar, Simo, Sungelebak, Karanggeneng, Lamongan");
-        ?>        
+        ?> 
     </head>
     <body class="easyui-layout">
         <div data-options="region:'center'" >
@@ -50,9 +50,9 @@ $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
                 </div>
             </div>
         </div>
-        <div data-options="region:'south'" style="height:25px;padding:5px;text-align: center;font-style: italic;font-size: 10px;">
+        <div data-options="region:'south'" style="height:25px;padding:2px;text-align: center;font-style: italic;font-size: 10px;">
             <span><?= FOOTER_TEXT ?></span>
-            <span style="float: right">
+            <span style="float: right;margin-top: -3px;">
                 <form id="kjksmawarsimo_themes_form" name="kjksmawarsimo_themes_form" method="post" action="" style="text-align: right;">
                     Theme 
                     <select id="themes" name="themes" onchange="document.forms['kjksmawarsimo_themes_form'].submit();">
