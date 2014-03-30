@@ -47,7 +47,7 @@ $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
                             Anda login sebagai <?= $_SESSION['user_name'] ?>
                         </td>
                         <td>
-                            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true" onclick="logout();">Logout</a>
+                            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true" iconCls="icon-no" onclick="logout();">Logout</a>
                         </td>
                     </tr>
                 </table>
