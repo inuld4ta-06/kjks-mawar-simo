@@ -1,6 +1,112 @@
 <?php
-include_once '../../classes/mDbConn.php';
+
+//include_once '../../classes/mDbConn.php';
 class mPembayaranSiswa extends mDbConn {
+
+    public function getStrukData($msid, $print = false) {
+        $query = <<<q
+select p.pbyr_id, s.ms_nama, s.ms_departemen, s.ms_jurusan, s.ms_kelas, t.mt_jenis, p.pbyr_tahun, p.pbyr_bulan, format(p.pbyr_nominal,0,'id_ID') as pbyr_nominal, p.pbyr_nominal as pbyr_nominal_fortotal, p.pbyr_text
+from pembayaran p
+left join m_transaksi t on t.mt_id = p.mt_id
+left join m_siswa s on s.ms_id = p.ms_id
+where p.ms_id=$msid and p.struk_id=0 and p.pbyr_deletedate is null
+order by p.mt_id asc, p.pbyr_tahun asc, p.pbyr_bulan asc
+q;
+        $namasiswa = '';
+        $listTransaksi = array();
+        $no = 1;
+        foreach ($this->fetchQuery($query) as $data) {
+            $namasiswa = $data['ms_nama'];
+            $siswaDepartemen = $data['ms_departemen'];
+            $siswaJurusan = $data['ms_jurusan'];
+            $siswaKelas = $data['ms_kelas'];
+            $listTransaksi[$no]['pbyr_id'] = $data['pbyr_id'];
+            $listTransaksi[$no]['mt_jenis'] = $data['mt_jenis'];
+            $listTransaksi[$no]['pbyr_tahun'] = $data['pbyr_tahun'];
+            $listTransaksi[$no]['pbyr_bulan'] = $data['pbyr_bulan'];
+            $listTransaksi[$no]['pbyr_nominal'] = $data['pbyr_nominal'];
+            $listTransaksi[$no]['pbyr_nominal_fortotal'] = $data['pbyr_nominal_fortotal'];
+            $listTransaksi[$no]['pbyr_text'] = $data['pbyr_text'];
+            $no++;
+        }
+        $total = 0;
+        $html = array();
+
+        $html[] = "<div style='font-family:courier; padding:10px;'>";
+        $html[] = "<div style='text-align:center; font-weight:bold'>KJKS MATHOLI'UL ANWAR<br>Jl. Raya Simo Sungelebak Karanggeneng Lamongan</div>";
+        $html[] = "Siswa: $namasiswa, ($siswaDepartemen - $siswaJurusan - $siswaKelas)<br><br>";
+        $html[] = "<table width='100%'>";
+        $html[] = "<tr><td>Nama Transaksi</td><td>Tahun, bulan</td><td>Nominal</td></tr>";
+        foreach ($listTransaksi as $trans) {
+            $html[] = "<tr><td>" . $trans['mt_jenis'] . "</td><td>" . $trans['pbyr_tahun'] . ", " . $trans['pbyr_bulan'] . "</td><td>" . $trans['pbyr_nominal'] . "</td></tr>";
+            $html[] = "<tr><td colspan=2>" . $trans['pbyr_text'] . "</td><td></td></tr>";
+            $total = $total + $trans['pbyr_nominal_fortotal'];
+        }
+        setlocale(LC_MONETARY, 'id_ID.UTF-8');
+        $totalll = number_format($total,0,',','.');
+        $html[] = "<tr><td colspan=2 align=center>TOTAL</td><td>$totalll</td></tr>";
+        $html[] = "</table>";
+        $html[] = "</div>";
+        $htmls = implode('', $html);
+        
+        if($print){
+            $this->doSimpanStruk($msid);
+        }
+        
+        return $htmls;
+    }
+    
+    public function doSimpanStruk($msid) {
+        $db = $this->getConn();
+        $querycekNmrStruk = "select struk_id from pembayaran order by struk_id desc limit 1";
+        foreach ($db->query($querycekNmrStruk) as $row){
+            $lastStrukNum = $row['struk_id'];
+        }
+        $lastStrukNum++;
+        $db->exec("update pembayaran set struk_id=$lastStrukNum where ms_id=$msid and struk_id=0");
+        $db = null;
+    }
+
+    public function getDataPembayaran($msid, $jenis, $bulan, $tahun, $offset, $rows) {
+        if ($jenis == '') {
+            $pbyrJenis = '';
+        } else {
+            $pbyrJenis = " and p.mt_id = $jenis ";
+        }
+        if ($bulan == 'all') {
+            $pbyrBulan = "";
+        } else {
+            $pbyrBulan = " and p.pbyr_bulan = $bulan ";
+        }
+        $query = <<<q
+                select 
+                    p.pbyr_id,
+                    t.mt_jenis,
+                    p.ms_id,
+                    p.pbyr_tahun,
+                    p.pbyr_bulan,
+                    format(p.pbyr_nominal,0,'id_ID') as pbyr_nominal,
+                    p.pbyr_text,
+                    p.pbyr_createdate,
+                    p.pbyr_createby,
+                    p.struk_id
+                from pembayaran p
+                left join m_transaksi t on t.mt_id = p.mt_id
+                where p.ms_id = $msid
+                    $pbyrJenis
+                    and p.pbyr_tahun = $tahun
+                    $pbyrBulan
+                    and p.pbyr_deletedate is null
+                order by p.pbyr_tahun asc, p.pbyr_bulan asc
+                limit $offset, $rows
+q;
+        return $this->fetchQuery($query);
+    }
+
+    public function getDefaultPembayaran($msid, $jenis) {
+        $query = "select nominal from default_pembayaran where ms_id=$msid and mt_id=$jenis";
+        return $this->fetchQuery($query);
+    }
 
     public function getComboDataSiswa($q) {
         $query = "select ms_id, ms_nis, ms_nisn, ms_nama, ms_departemen, ms_jurusan, ms_kelas "
@@ -32,103 +138,95 @@ q;
             return "tidak ditemukan jenis pembayarannya, query : " . $query . ", numrows : " . $this->runQuery($query)->num_rows . " con : " . $this->con->error;
         }
     }
-    
+
     public function loadStrukPmbyrn($ms_id) {
         echo <<<t
 t;
     }
-    
+
     public function loadPmbyrn($mtid, $msid) {
         
     }
 
-    public function getDetailSyahriyah($msid) {
-        $q = <<<q
-SELECT 
-    pbyr_tahun, 
-    CASE pbyr_bulan 
-        WHEN 1 THEN 'Januari' 
-        WHEN 2 THEN 'Februari' 
-        WHEN 3 THEN 'Maret' 
-        WHEN 4 THEN 'April' 
-        WHEN 5 THEN 'Mei' 
-        WHEN 6 THEN 'Juni' 
-        WHEN 7 THEN 'Juli' 
-        WHEN 8 THEN 'Agustus' 
-        WHEN 9 THEN 'September' 
-        WHEN 10 THEN 'Oktober' 
-        WHEN 11 THEN 'Nopember' 
-        WHEN 12 THEN 'Desember' 
-    END AS pbyr_bulan_v,
-    pbyr_nominal,
-    pbyr_createdate
-FROM pembayaran p
-WHERE ms_id=$msid
-order by pbyr_tahun desc, pbyr_bulan desc
-q;
-        return $this->fetchQuery($q);
-        
-    }
-
-    public function getFooterSyahriyah($msid) {
-        $q = <<<q
-SELECT SUM(p.pbyr_nominal) AS pbyr_nominal, 'Total' AS pbyr_bulan_v
-FROM pembayaran p
-WHERE ms_id=$msid
-q;
-        return $this->fetchQuery($q);
-    }
-    
     public function getNewStrukId($msid) {
         $username = $_SESSION['user_name'];
         $query = <<<q
                 insert into t_struk (struk_msid, struk_date, struk_by)
                 values ('$msid', now(), '$username')
 q;
-        if($this->con->query($query)){
+        if ($this->con->query($query)) {
             return array('success' => true, 'struk_id' => $this->con->insert_id);
         } else {
             return array('success' => false, 'msg' => $this->con->error);
         }
     }
-    
-    public function getSyahriyahSiswaDefaultNominal($msid) {
-        $q = <<<q
-SELECT ms_defaultSyahriyahNominal
-FROM m_siswa
-WHERE ms_id=$msid
-q;
-        return $this->fetchQuery($q);
-    }
-    
-    public function cekSyahriyahBayar($msid, $tahun, $bulan) {
-        $q = <<<q
-select pbyr_id from pembayaran where ms_id=$msid and pbyr_tahun=$tahun and pbyr_bulan=$bulan
-q;
-        $r = $this->runQuery($q);
-        if($r->num_rows > 0){
-            return false;
+
+    private function cekBayar($msid, $jenis, $tahun, $bulan) {
+        $query = "select count(*) as jml "
+                . "from pembayaran "
+                . "where ms_id=$msid "
+                . "and mt_id=$jenis "
+                . "and pbyr_tahun=$tahun "
+                . "and pbyr_bulan=$bulan "
+                . "and pbyr_deletedate is null";
+        foreach ($this->fetchQuery($query) as $data) {
+            $jml = $data['jml'];
+        }
+        if ($jml > 0) {
+            return FALSE;
         } else {
-            return true;
+            return TRUE;
         }
     }
-    
-    public function doSyahriyahBayar($msid, $tahun, $bulan, $nominal) {
-        if($this->cekSyahriyahBayar($msid, $tahun, $bulan)) {
+
+    public function doBayar($msid, $jenis, $bulan, $tahun, $nominal, $keterangan, $petugas) {
+        $conn = $this->getConn();
+
+        if ($this->cekBayar($msid, $jenis, $tahun, $bulan)) {
+//            $q = <<<q
+//INSERT INTO 
+//    pembayaran (mt_id, ms_id, pbyr_tahun, pbyr_bulan, pbyr_nominal, pbyr_createdate, pbyr_createby, pbyr_text) 
+//    VALUES ($jenis, $msid, $tahun, $bulan, $nominal, NOW(), '$petugas', '$keterangan');
+//q;
             $q = <<<q
 INSERT INTO 
-    pembayaran (mt_id, ms_id, pbyr_tahun, pbyr_bulan, pbyr_nominal, pbyr_createdate) 
-    VALUES (1, $msid, $tahun, $bulan, $nominal, NOW());
+pembayaran (mt_id, ms_id, pbyr_tahun, pbyr_bulan, pbyr_nominal, pbyr_createdate, pbyr_createby, pbyr_text) 
+VALUES (:jenis, :msid, :tahun, :bulan, :nominal, NOW(), :petugas, :keterangan);
 q;
-            $r = $this->runQuery($q);
-            if($r){
+            $statmnt = $conn->prepare($q);
+            $statmnt->execute(
+                    array(
+                        ':jenis' => $jenis,
+                        ':msid' => $msid,
+                        ':tahun' => $tahun,
+                        ':bulan' => $bulan,
+                        ':nominal' => $nominal,
+                        ':petugas' => $petugas,
+                        ':keterangan' => $keterangan
+                    )
+            );
+            if ($statmnt->rowCount() > 0) {
                 return array('success' => true);
             } else {
                 return array('success' => false, 'msg' => "###");
             }
         } else {
-            return array('success' => false, 'msg' => 'Siswa sudah pernah membayar untuk bulan dan tahun tersebut.');
+            return array('success' => false, 'msg' => 'Siswa sudah pernah membayar');
         }
     }
     
+    public function doHapusPbyr($pbyrid, $petugas) {
+        try {
+            $db = $this->getConn();
+            $affectedRows = $db->exec("update pembayaran set pbyr_deletedate=now(), pbyr_deleteby='$petugas' where pbyr_id=$pbyrid");
+            if($affectedRows > 0){
+                return array('success' => true);
+            } else {
+                return array('success' => false, 'msg' => $db->errorInfo());
+            }
+        } catch (PDOException $e) {
+            return $e->getMessage();
+        }
+    }
+
 }

@@ -1,14 +1,36 @@
 <div style="padding: 5px;">
     <script>
-        
-        var msid = '0';
-        var struk_id;
-        
+
+        $(function() {
+            $('#pembsis_div_jenisDet_maingrid').datagrid({
+                fit: true, pagination: true, rownumbers: true,
+                toolbar: '#pembsis_div_jenisDet_maingrid_toolbar',
+                columns: [[
+                        {field: 'mt_jenis', title: 'Transaksi', width: 400},
+                        {field: 'pbyr_tahun', title: 'Tahun', width: 100},
+                        {field: 'pbyr_bulan', title: 'Bulan', width: 100},
+                        {field: 'pbyr_nominal', title: 'Nominal', width: 100},
+                        {field: 'pbyr_text', title: 'Keterangan', width: 100},
+                        {field: 'pbyr_createby', title: 'Petugas', width: 100},
+                        {field: 'pbyr_createdate', title: 'Tanggal Bayar', width: 150}
+                    ]]
+            });
+
+            $('#pembsis_div_jenisDet_inputJenis').combobox({
+                valueField: 'mt_id', textField: 'mt_jenis',
+                panelWidth: 500, panelHeight: 'auto',
+                onSelect: function(i) {
+                    getDataPembayaran();
+                    getDefaultPembayaran();
+                }
+            });
+        });
+
         $('#pembsis_siswa').combogrid({
             panelWidth: 650,
             idField: 'ms_id',
             textField: 'ms_nama',
-            url: 'controller/cPembayaranSiswa.php?act=comboSiswa',
+            url: '<?= createUrl() ?>&act=comboSiswa',
             method: 'get', mode: 'remote',
             columns: [[
                     {field: 'ms_id', title: 'ID Siswa', width: 50},
@@ -23,80 +45,159 @@
                 var g = $(this).combogrid('grid');
                 var s = g.datagrid('getSelected');
                 var i = s.ms_id;
-                loadNewTransaction(i);
+                loadSiswaDetail(i);
             }
         });
-        
-        function loadNewTransaction(i){
-            if(msid == i){
-            } else if(msid == 0 && msid != i){
-                msid = i
-                newTransaction(i);
-            } else if(msid != i && msid != 0){
-                $.messager.confirm('Konfirmasi', 'Anda yakin akan berpindah siswa tanpa mencetak struk?', function(r){
-                    if(r){
-                        msid = i;
-                        newTransaction(i);
-                    }
-                });
+
+        function loadSiswaDetail(i) {
+            // ambil data siswa dari combogrid untuk ditampilkan di detail di bawahnya
+            var g = $('#pembsis_siswa').combogrid('grid');
+            var c = g.datagrid('getSelected');
+            if (c) {
+                $('#pembsis_detsis_nid').html(c.ms_nis);
+                $('#pembsis_detsis_kls').html(c.ms_kelas);
+                $('#pembsis_detsis_dep').html(c.ms_departemen);
+                var forPhoto = "<img src='images/siswa/" + c.ms_id + ".jpg' onerror='this.src=\"images/face.png\"' width='90px' height='90px' style='text-align:top'>";
+                $('#pembsis_detsis_pto').html(forPhoto);
             }
-        }
-        
-        function newTransaction(i){
-            $.post(
-                'controller/cPembayaranSiswa.php?act=getNewStrukId',
-                {ms_id:i},
-                function(result){
-                    if(result.success){
-                        // ambil data siswa dari combogrid untuk ditampilkan di detail di bawahnya
-                        var g = $('#pembsis_siswa').combogrid('grid');
-                        var c = g.datagrid('getSelected');
-                        if (c) {
-                            $('#pembsis_detsis_nid').html(c.ms_nis);
-                            $('#pembsis_detsis_kls').html(c.ms_kelas);
-                            $('#pembsis_detsis_dep').html(c.ms_departemen);
-                            var forPhoto = "<img src='images/siswa/" + c.ms_id + ".jpg' onerror='this.src=\"images/face.png\"' width='90px' height='90px' style='text-align:top'>";
-                            $('#pembsis_detsis_pto').html(forPhoto);
-                            $('#pembsis_div_struk').panel({
-                                title:'Struk Pembayaran: ' + result.struk_id + ' untuk: ' + c.ms_nama
-                            });
-                        }
-                        struk_id = result.struk_id;
-                        $('#pembsis_div_jenisDet_srcJenis').combobox({
-                            url:'controller/cPembayaranSiswa.php?act=loadJnsPmbyrn&ms_id='+c.ms_id
-                        });
-                        $('#pembsis_div_struk').panel('refresh', 'controller/cPembayaranSiswa.php?act=loadStrukPmbyrn&ms_id=' + i + '&struk_id=' + struk_id);
-                    } else {
-                        alert(result.msg);
-                    }
-                },
-                'json'
-            );
+            $('#pembsis_div_jenisDet_inputJenis').combobox({
+                url: '<?= createUrl() ?>&act=loadJnsPmbyrn&ms_id=' + c.ms_id
+            });
         }
 
+//        function newTransaction(i){
+//            $.post(
+//                'controller/cPembayaranSiswa.php?act=getNewStrukId',
+//                {ms_id:i},
+//                function(result){
+//                    if(result.success){
+//                        $('#pembsis_div_struk').panel('refresh', 'controller/cPembayaranSiswa.php?act=loadStrukPmbyrn&ms_id=' + i + '&struk_id=' + struk_id);
+//                    } else {
+//                        alert(result.msg);
+//                    }
+//                },
+//                'json'
+//            );
+//        }
+
         var w = $(window).width();
-        
+
         $('#pembsis_div_jenisDet').panel({
             height: $(window).height() - 310,
             width: $(window).width() - 15
         });
-        
-        function cetakStruk(){
-            alert("struk sedang dicetak");
-            struk_msid = 0;
+
+        function getCriteriaPencarian() {
+            // get id_siswa
+            var g = $('#pembsis_siswa').combogrid('grid');
+            var c = g.datagrid('getSelected');
+            // get jenis pembayaran
+            var j = $('#pembsis_div_jenisDet_inputJenis').combobox('getValue');
+            // get input bulan
+            var b = $('#pembsis_div_jenisDet_inputBulan').val();
+            // get input tahun
+            var t = $('#pembsis_div_jenisDet_inputTahun').val();
+            // get input keterangan
+            var k = $('#pembsis_div_jenisDet_inputKeterangan').val();
+            // get input nominal
+            var n = $('#pembsis_div_jenisDet_inputNominal').numberbox('getValue');
+            var d = {msid: c.ms_id, jenis: j, bulan: b, tahun: t, keterangan: k, nominal: n};
+            return d;
         }
+
+        function getDataPembayaran() {
+            var d = getCriteriaPencarian();
+            $('#pembsis_div_jenisDet_maingrid').datagrid({
+                url: '<?= createUrl() ?>&act=getDataPembayaran',
+                queryParams: d,
+                pageNumber: 1
+            });
+        }
+
+        function getDefaultPembayaran() {
+            var dft = $('#pembsis_div_jenisDet_inputTypeNominal').val();
+            if (dft == 0) {
+                var d = getCriteriaPencarian();
+                $.post(
+                        'page/pembayaranSiswa/cPembayaranSiswa.php',
+                        {act: 'getdefaultpembayaran', msid: d.msid, jenis: d.jenis},
+                function(result) {
+                    $('#pembsis_div_jenisDet_inputNominal').numberbox('setValue', result);
+                }
+                );
+            } else {
+
+            }
+        }
+
+        function pembsis_doBayar() {
+            var d = getCriteriaPencarian();
+            $.post(
+                    '<?= createUrl() ?>&act=dobayar',
+                    d,
+                    function(result) {
+                        if (result.success) {
+                            $('#pembsis_div_jenisDet_maingrid').datagrid('reload');
+                            pembSis_update_struk();
+                        } else {
+                            alert(result.msg);
+                        }
+                    },
+                    'json'
+                    );
+        }
+
+        function pembsis_doHapus() {
+            var g = $('#pembsis_div_jenisDet_maingrid').datagrid('getSelected');
+            if (g) {
+                $.messager.confirm('Konfirmasi', 'Anda yakin?', function(r) {
+                    if (r) {
+                        $.post(
+                            '<?= createUrl() ?>&act=hapusPembayaran',
+                            {pbyrid:g.pbyr_id},
+                            function(result){
+                                if(result.success){
+                                    $('#pembsis_div_jenisDet_maingrid').datagrid('reload');
+                                    pembSis_update_struk();
+                                } else {
+                                    alert('terjadi kesalahan');
+                                }
+                            },
+                            'json'
+                        );
+                    }
+                });
+            } else {
+                alert('silakan pilih dulu salah satu data yg ingin dihapus.');
+            }
+        }
+
+        function pembSis_update_struk() {
+            var d = getCriteriaPencarian();
+            $.post(
+                    '<?= createUrl() ?>&act=getStrukData',
+                    d,
+                    function(result) {
+                        $('#pembsis_div_struk').html(result);
+                    }
+            );
+        }
+        
+        function cetakStruk() {
+            var d = getCriteriaPencarian();
+            window.open('<?= createUrl() ?>&act=cetakStruk&msid=' + d.msid);
+        }
+
     </script>
     <div style="float: left;width: 50%;">
         <div>
             <table style="width: 100%">
                 <tr>
-                    <td style="width: 10%;">Siswa</td>
-                    <td style="width: 90%;">: <input id="pembsis_siswa" style="width: 175px"> 
+                    <td>Siswa</td>
+                    <td>: <input id="pembsis_siswa" style="width: 175px"> 
                         <span style="font-style: italic">* Anda bisa mengetikkan nama / induk / scan barcode</span>
                     </td>
                 </tr>
-            </table>
-            <table>
                 <tr>
                     <td>No.Induk</td>
                     <td>: <span id="pembsis_detsis_nid"></span></td>
@@ -119,51 +220,37 @@
     </div>
     <div style="float: left;width:50%;">
         <div id="pembsis_div_struk" class="easyui-panel" title="Struk Pembayaran" 
-            style="height:200px;" tools="#pembsis_div_struk_tool">
+             style="height:200px;" tools="#pembsis_div_struk_tool">
         </div>
         <div id="pembsis_div_struk_tool">
             <a href="javascript:void(0)" iconCls="icon-print" onclick="cetakStruk();"></a>
         </div>
     </div>
     <div id="pembsis_div_jenisDet" data-options='border: false' style="padding-top: 5px;">
-        <table id="pembsis_div_jenisDet_maingrid" class="easyui-datagrid"
-               data-options="
-               fit:true,pagination: true,rownumbers: true,
-               toolbar:'#pembsis_div_jenisDet_maingrid_toolbar',
-               columns:[[
-               {field:'field1', title:'Tahun', width:100},
-               {field:'field2', title:'Bulan', width:100},
-               {field:'field3', title:'Nominal', width:100},
-               {field:'field3', title:'Keterangan', width:100},
-               {field:'field4', title:'Petugas', width:100},
-               {field:'field4', title:'Tanggal Bayar', width:100}
-               ]]
-               
-               "></table>
+        <table id="pembsis_div_jenisDet_maingrid"></table>
         <div id="pembsis_div_jenisDet_maingrid_toolbar" style="padding: 5px;">
             <form>
-            Jenis Pembayaran: <input id="pembsis_div_jenisDet_srcJenis" class="easyui-combobox" data-options="
-                   valueField:'mt_id', textField:'mt_jenis',
-                   panelWidth:500, panelHeight: 'auto'
-            ">
-            Tahun: <select>
-                <?php for($taahun=date("Y") - 2; $taahun < date("Y") + 2; $taahun++){?>
-                <option value="<?= $taahun ?>" <?= date("Y") == $taahun ? 'selected="selected"' : '' ?>><?= $taahun ?></option>
-                <?php } ?>
-            </select>
-            Bulan: <select>
-                <?php for($buulan=1; $buulan <= 12; $buulan++){?>
-                <option value="<?= $buulan ?>" <?= date("m") == $buulan ? 'selected="selected"' : '' ?>><?= date("M",mktime(0,0,0,$buulan, date("d"), date("Y"))) ?></option>
-                <?php } ?>
-            </select>
-            Nominal: 
-            <select onchange='alert(this.value)'>
-                <option value='0'>Default</option>
-                <option value='1'>Custom</option>
-            </select>
-            <input class="easyui-numberbox">
-            Keterangan: <input>
-            <a href='javascript:void(0)' class='easyui-linkbutton'>Bayar</a>
+                Jenis Pembayaran: <input id="pembsis_div_jenisDet_inputJenis">
+                Tahun: <select id='pembsis_div_jenisDet_inputTahun' onchange="getDataPembayaran();">
+                    <?php for ($taahun = date("Y") - 2; $taahun < date("Y") + 2; $taahun++) { ?>
+                        <option value="<?= $taahun ?>" <?= date("Y") == $taahun ? 'selected="selected"' : '' ?>><?= $taahun ?></option>
+                    <?php } ?>
+                </select>
+                Bulan: <select id='pembsis_div_jenisDet_inputBulan' onchange="getDataPembayaran();">
+                    <option value="all">Semua</option>
+                    <?php for ($buulan = 1; $buulan <= 12; $buulan++) { ?>
+                        <option value="<?= $buulan ?>" <?= date("m") == $buulan ? 'selected="selected"' : '' ?>><?= date("M", mktime(0, 0, 0, $buulan, date("d"), date("Y"))) ?></option>
+                    <?php } ?>
+                </select>
+                Nominal: 
+                <select onchange='getDefaultPembayaran();' id='pembsis_div_jenisDet_inputTypeNominal'>
+                    <option value='0'>Default</option>
+                    <option value='1'>Custom</option>
+                </select>
+                <input class="easyui-numberbox" id="pembsis_div_jenisDet_inputNominal" data-options="groupSeparator:'.'">
+                Keterangan: <input id="pembsis_div_jenisDet_inputKeterangan">
+                <a href='javascript:void(0)' class='easyui-linkbutton' onclick="pembsis_doBayar();" iconCls="icon-ok">Bayar</a>
+                <a href='javascript:void(0)' class='easyui-linkbutton' onclick="pembsis_doHapus();" iconCls="icon-cancel">Hapus</a>
             </form>
         </div>
     </div>
