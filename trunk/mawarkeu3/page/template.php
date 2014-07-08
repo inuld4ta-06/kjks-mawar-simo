@@ -1,5 +1,6 @@
 <?php
 $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
+$username = $_SESSION['user_name'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -10,6 +11,8 @@ $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
         <link rel="stylesheet" type="text/css" href="http://www.jeasyui.com/easyui/themes/icon.css">
         <script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery-1.8.0.min.js"></script>
         <script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="http://www.jeasyui.com/easyui/datagrid-detailview.js"></script>
+        <script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.edatagrid.js"></script>
         <?php
         /* ---------------- Definisi situs ---------------- */
         define("HEADERKETERANGANSEKOLAH01", "Sistem Keuangan");
@@ -21,6 +24,29 @@ $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
     <body class="easyui-layout">
         <div data-options="region:'center'" >
             <script>
+
+                $.extend($.fn.datebox.defaults, {
+                    formatter: function(date) {
+                        var y = date.getFullYear();
+                        var m = date.getMonth() + 1;
+                        var d = date.getDate();
+                        return  y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+                    },
+                    parser: function(s) {
+                        if (!s)
+                            return new Date();
+                        var ss = s.split('-');
+                        var d = parseInt(ss[2], 10);
+                        var m = parseInt(ss[1], 10);
+                        var y = parseInt(ss[0], 10);
+                        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                            return new Date(y, m - 1, d);
+                        } else {
+                            return new Date();
+                        }
+                    }
+                });
+
                 var index = 0;
                 function openMenu(nmMenu, url) {
                     index++;
@@ -29,34 +55,31 @@ $themes = isset($_REQUEST['themes']) ? $_REQUEST['themes'] : 'default';
                     } else {
                         $('#mawarkeu3_tt').tabs('add', {
                             title: nmMenu,
-                            href: 'page/'+url+'.php',
+                            href: 'ajaxroute.php?p=' + url,
                             closable: true
                         });
                     }
                 }
-                
-                function logout(){
+
+                function logout() {
                     window.location.replace("?logout");
                 }
             </script>
             <div style="padding:5px;border:1px solid #ddd">
                 <table width="100%">
                     <tr>
-                        <td><?php include_once 'menuHeader.php'; ?></td>
+                        <td><?php include 'menuHeader.php'; ?></td>
                         <td style="vertical-align: middle;text-align: right;">
-                            Anda login sebagai <?= $_SESSION['user_name'] ?>
-                        </td>
-                        <td>
-                            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true" iconCls="icon-no" onclick="logout();">Logout</a>
+                            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true" iconCls="icon-no" onclick="logout();" title="Logout"><b><?= $username ?></b></a>
                         </td>
                     </tr>
                 </table>
             </div>
             <div id='mawarkeu3_tt' class="easyui-tabs" data-options="fit: true">
                 <div title="Home" style="padding: 10px;background: url('css/login/images/bg.jpg');color:white;">
-                            <?= HEADERKETERANGANSEKOLAH01 ?><br>
-                            <?= HEADERKETERANGANSEKOLAH02 ?><br>
-                            <?= HEADERKETERANGANSEKOLAH03 ?><br>
+                    <?= HEADERKETERANGANSEKOLAH01 ?><br>
+                    <?= HEADERKETERANGANSEKOLAH02 ?><br>
+                    <?= HEADERKETERANGANSEKOLAH03 ?><br>
                 </div>
             </div>
         </div>
