@@ -8,22 +8,56 @@
 class mSiswa extends mDbConn {
 
     //put your code here
-    public function getSiswaData($searchKey = '', $offset, $row) {
-        $q = $searchKey == '' ? '%%' : "%$searchKey%";
-        $query = "select s.ms_id, s.ms_nis, s.ms_nisn, s.ms_nama, s.ms_jeniskelamin, s.ms_birthplace, date_format(s.ms_birthdate,'%Y-%m-%d') as ms_birthdate, d.md_id, s.ms_departemen, j.mj_id, s.ms_jurusan, k.mkls_id, s.ms_kelas "
-                . "from m_siswa s "
+    public function getSiswaData($dept, $jurs, $kels, $name, $order, $sort, $offset, $row) {
+        $wheres = '';
+        $arrFetch = array();
+        if(!empty($dept)){
+            $where[] = "d.md_id=:dept";
+            $arrFetch[':dept'] = $dept;
+        }
+        if(!empty($jurs)){
+            $where[] = "j.mj_id=:jurs";
+            $arrFetch[':jurs'] = $jurs;
+        }
+        if(!empty($kels)){
+            $where[] = "k.mkls_id=:kels";
+            $arrFetch[':kels'] = $kels;
+        }
+        if(!empty($name)){
+            $where[] = "(s.ms_nama like :name or s.ms_id like :name or s.ms_nis like :name or s.ms_nisn like :name)";
+            $arrFetch[':name'] = '%' . $name . '%';
+        }
+        if(count($where) > 0){
+            $wheres = "where " . implode(" and ", $where);
+        }
+        
+        $querytot = "select count(*) as jum from m_siswa s "
                 . "left join m_departemen d on d.md_nama = s.ms_departemen "
-                . "left join m_jurusan j on j.mj_nama = s.ms_jurusan "
-                . "left join m_kelas k on k.mkls_nama = s.ms_kelas "
-                . "where (s.ms_id like '$q' or s.ms_nisn like '$q' or s.ms_nis like '$q' or s.ms_nama like '$q') "
-                . "limit $offset, $row";
-        $res = $this->fetchQuery($query);
-        $querytot = "select count(*) as jum from m_siswa s where (s.ms_id like '$q' or s.ms_nisn like '$q' or s.ms_nis like '$q' or s.ms_nama like '$q')";
-        $restot = $this->fetchQuery($querytot);
+                . "left join m_jurusan j on j.mj_nama = s.ms_jurusan and j.mj_departemen = d.md_id "
+                . "left join m_kelas k on k.mkls_nama = s.ms_kelas and k.mkls_jurusan = j.mj_id and k.mkls_departemen = d.md_id "
+                . "$wheres";
+        $restot = $this->fetchQuery($querytot, $arrFetch);
         foreach ($restot as $rest) {
             $tot = $rest['jum'];
         }
-        return array('rows' => $res, 'total' => $tot);
+        
+        $orders = '';
+        if(!empty($order)){
+            $orders = "order by $sort $order";
+        } else {
+            $orders = "order by ms_id asc";
+        }
+        
+        $query = "select s.ms_id, s.ms_nis, s.ms_nisn, s.ms_nama, s.ms_jeniskelamin, s.ms_birthplace, date_format(s.ms_birthdate,'%Y-%m-%d') as ms_birthdate, d.md_id, s.ms_departemen, j.mj_id, s.ms_jurusan, k.mkls_id, s.ms_kelas "
+                . "from m_siswa s "
+                . "left join m_departemen d on d.md_nama = s.ms_departemen "
+                . "left join m_jurusan j on j.mj_nama = s.ms_jurusan and j.mj_departemen = d.md_id "
+                . "left join m_kelas k on k.mkls_nama = s.ms_kelas and k.mkls_jurusan = j.mj_id and k.mkls_departemen = d.md_id "
+                . "$wheres "
+                . "$orders "
+                . "limit $offset , $row";
+        $res = $this->fetchQuery($query, $arrFetch);
+        return array('rows' => $res, 'total' => $tot, 'qry' => $query, 'qrytot' => $querytot);
     }
 
     public function doSaveSiswa($nis, $nisn, $nama, $gend, $tmpl, $tgll, $kels) {
@@ -105,6 +139,29 @@ class mSiswa extends mDbConn {
             return array('success' => false, 'msg' => 'gagal delete');
         }
         $db = null;
+    }
+    
+    public function getListDept() {
+        return $this->fetchQuery("select * from m_departemen order by md_nama");
+    }
+    
+    public function getListJurs($mdid) {
+        $where_mdid = empty($mdid) ? "" : " where mj_departemen = $mdid";
+        return $this->fetchQuery("select * from m_jurusan $where_mdid order by mj_nama");
+    }
+
+    public function getListKels($mdid, $mjid) {
+        $wheres = '';
+        if(!empty($mdid)){
+            $where[] =  " mkls_departemen = $mdid ";
+        }
+        if(!empty($mjid)){
+            $where[] = " mkls_jurusan = $mjid ";
+        }
+        if(count($where) > 0){
+            $wheres = "where " . implode(" and ", $where);
+        }
+        return $this->fetchQuery("select * from m_kelas $wheres order by mkls_nama");
     }
 
     public function getListKelas() {
