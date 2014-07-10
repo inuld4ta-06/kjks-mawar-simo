@@ -1,6 +1,10 @@
 <table id="admSiswaMainGrid"></table>
-<div id="admSiswaMainGridToolbar" style="padding:5px;">
-    cari <input id="admSiswaMainGridToolbarSearchKey" onchange="admRole_searchSiswa(this.value);">
+<div id="admSiswaMainGridToolbar" style="padding:10px;">
+    Departemen <input id="admSiswaMainGridToolbarSearchDept">
+    Jurusan <input id="admSiswaMainGridToolbarSearchJurs">
+    Kelas <input id="admSiswaMainGridToolbarSearchKels">
+    Nama <input id="admSiswaMainGridToolbarSearchName" onchange="admRole_searchSiswa();">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="admRole_searchSiswa();">Go</a><br>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" onclick="admSiswa_openAddnewSiswa();">Tambah Siswa</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" onclick="admSiswa_openEditSiswa();">Edit</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="admSiswa_doDeleteSiswa();">Hapus Siswa</a>
@@ -36,13 +40,13 @@
                 {field: 'ms_id', title: 'ID', width: 100},
                 {field: 'ms_nis', title: 'NIS', width: 100},
                 {field: 'ms_nisn', title: 'NISN', width: 100},
-                {field: 'ms_nama', title: 'Nama', width: 300},
+                {field: 'ms_nama', title: 'Nama', width: 300, sortable: true},
                 {field: 'ms_jeniskelamin', title: 'Jns Kel', width: 50},
                 {field: 'ms_birthplace', title: 'Tmp Lahir', width: 100},
                 {field: 'ms_birthdate', title: 'Tgl Lahir', width: 100},
                 {field: 'ms_departemen', title: 'departemen', width: 100},
                 {field: 'ms_jurusan', title: 'Jurusan', width: 100},
-                {field: 'ms_kelas', title: 'Kelas', width: 50}
+                {field: 'ms_kelas', title: 'Kelas', width: 100}
             ]],
         toolbar: '#admSiswaMainGridToolbar',
         pagination: true, rownumbers: true, height: 400,
@@ -58,18 +62,51 @@
         ]
     });
 
+    $('#admSiswaMainGridToolbarSearchDept').combobox({
+        textField: 'md_nama', valueField: 'md_id', panelHeight: 'auto',
+        url: '<?= createUrl() ?>&act=comboDept',
+        onSelect: function(rec) {
+            $('#admSiswaMainGridToolbarSearchJurs').combobox('clear');
+            $('#admSiswaMainGridToolbarSearchKels').combobox('clear');
+            $('#admSiswaMainGridToolbarSearchJurs').combobox('reload', '<?= createUrl() ?>&act=comboJurs&mdid=' + rec.md_id);
+        }
+    });
+
+    $('#admSiswaMainGridToolbarSearchJurs').combobox({
+        textField: 'mj_nama', valueField: 'mj_id', panelHeight: 'auto',
+        url: '<?= createUrl() ?>&act=comboJurs',
+        onSelect: function(rec) {
+            $('#admSiswaMainGridToolbarSearchKels').combobox('clear');
+            var mdid = $('#admSiswaMainGridToolbarSearchDept').combobox('getValue');
+            $('#admSiswaMainGridToolbarSearchKels').combobox('reload', '<?= createUrl() ?>&act=comboKels&mdid=' + mdid + '&mjid=' + rec.mj_id);
+        }
+    });
+
+    $('#admSiswaMainGridToolbarSearchKels').combobox({
+        textField: 'mkls_nama', valueField: 'mkls_id', panelHeight: 'auto'
+    });
+
     $('#admSiswa_dialog_inputKelas').combobox({
         textField: 'mkls_nama', valueField: 'mkls_id', panelHeight: 'auto',
         url: '<?= createUrl() ?>&act=comboKelas'
     });
 
-    function admRole_searchSiswa(key){
+    function admRole_searchSiswa() {
+        var dept = $('#admSiswaMainGridToolbarSearchDept').combobox('getValue');
+        var jurs = $('#admSiswaMainGridToolbarSearchJurs').combobox('getValue');
+        var kels = $('#admSiswaMainGridToolbarSearchKels').combobox('getValue');
+        var name = $('#admSiswaMainGridToolbarSearchName').val();
         $('#admSiswaMainGrid').datagrid({
-            queryParams:{keySearch:key},
+            queryParams: {
+                dept: dept,
+                jurs: jurs,
+                kels: kels,
+                name: name
+            },
             pageNumber:1
         });
     }
-    
+
     var url;
 
     function admSiswa_openAddnewSiswa() {
