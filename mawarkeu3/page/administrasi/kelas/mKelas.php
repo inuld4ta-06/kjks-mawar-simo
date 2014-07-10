@@ -20,9 +20,10 @@ class mKelas extends mDbConn {
                 . "left join m_departemen d on d.md_id = k.mkls_departemen "
                 . "left join m_jurusan j on j.mj_id = k.mkls_jurusan "
                 . "$q "
+                . "order by md_nama asc, mkls_nama asc, mj_nama asc "
                 . "limit $offset, $row";
         $res = $this->fetchQuery($query);
-        $querytot = "select count(*) as jum from m_kelas $q";
+        $querytot = "select count(*) as jum from m_kelas k $q";
         $restot = $this->fetchQuery($querytot);
         foreach($restot as $rest){
             $tot = $rest['jum'];
