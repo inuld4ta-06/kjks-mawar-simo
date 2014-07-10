@@ -1,6 +1,8 @@
 <table id="admJurusanMainGrid"></table>
 <div id="admJurusanMainGridToolbar" style="padding:5px;">
-    cari <input id="admJurusanMainGridToolbarSearchKey" onchange="admJurusan_searchJurusan(this.value);">
+    Departemen 
+    <input id="admJurusanMainGridToolbarSearchKey" class="admJurusan_comboDepartemen">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="admJurusan_searchJurusan();">Go</a><br>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" onclick="admJurusan_openAddnewJurusan();">Tambah Jurusan</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" onclick="admJurusan_openEditJurusan();">Edit</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="admJurusan_doDeleteJurusan();">Hapus Jurusan</a>
@@ -16,7 +18,7 @@
         }
     </style>
     <input type="hidden" id="admJurusan_dialog_inputJurusanId">
-    <span class="admJurusan_dialogAddEdit_inputs">Departemen</span><input id="admJurusan_dialog_inputDepartemen"><br>
+    <span class="admJurusan_dialogAddEdit_inputs">Departemen</span><input id="admJurusan_dialog_inputDepartemen" class="admJurusan_comboDepartemen"><br>
     <span class="admJurusan_dialogAddEdit_inputs">Jurusan</span><input id="admJurusan_dialog_inputJurusan"><br>
     <div id="admJurusan_dialogAddEdit_bt">
         <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="admJurusan_doAddEditJurusan();"></a>
@@ -38,12 +40,13 @@
         singleSelect: true
     });
     
-    $('#admJurusan_dialog_inputDepartemen').combobox({
+    $('.admJurusan_comboDepartemen').combobox({
         url:'<?= createUrl() ?>&act=comboDepartemen',
         textField:'md_nama', valueField:'md_id', panelHeight:'auto'
     });
 
-    function admJurusan_searchJurusan(key){
+    function admJurusan_searchJurusan(){
+        var dept = $('#admJurusanMainGridToolbarSearchKey').combobox('getValue');
         $('#admJurusanMainGrid').datagrid({
             queryParams:{keySearch:key},
             pageNumber:1
