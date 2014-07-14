@@ -5,9 +5,7 @@
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" onclick="admMenu_openEditMenu();">Edit Menu</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="admMenu_removeMenu();">Hapus Menu</a>
 </div>
-<div id="admMenu_dialogAddEdit" class="easyui-dialog" closed="true" modal="true"
-     style="padding: 20px;width: 300px;height: 280px;"
-     buttons="#admMenu_dialogAddEdit_bt">
+<div id="admMenu_dialogAddEdit" style="padding:20px;">
     <style>
         .admMenu_dialogAddEdit_inputs {
             display: inline-block;
@@ -21,21 +19,46 @@
     <span class="admMenu_dialogAddEdit_inputs">Type</span><input id="admMenu_dialog_inputType"><br>
     <span class="admMenu_dialogAddEdit_inputs">Order</span><input id="admMenu_dialog_inputOrder"><br>
     <span class="admMenu_dialogAddEdit_inputs">Aktif?</span><input id="admMenu_dialog_inputAktif" type="checkbox">
-    <div id="admMenu_dialogAddEdit_bt">
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="admMenu_doAddEditMenu();"></a>
-        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#admMenu_dialogAddEdit').dialog('close');"></a>
-    </div>
     <input type="hidden" id="admMenu_dialog_inputOldLokasi">
 </div>
-<div id="admMenu_dialogAddRole" class="easyui-dialog" closed="true" modal="true"
-     style="padding: 20px">
+<div id="admMenu_dialogAddRole" style="padding: 20px">
     <input id="admMenu_dialogAddRole_inputRole">
     <input type="hidden" id="admMenu_dialogAddRole_indexDgrid">
     <input type="hidden" id="admMenu_dialogAddRole_menuID">
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="admMenu_doAddRole()">Tambah</a>
 </div>
 
 <script>
+    $('#admMenu_dialogAddEdit').dialog({
+        closed:true, modal:true, width:300, height:280,
+        buttons:[
+            {
+                iconCls:'icon-ok',
+                handler:function(){
+                    admMenu_doAddEditMenu();
+                }
+            },
+            {
+                iconCls:'icon-cancel',
+                handler:function(){
+                    $('#admMenu_dialogAddEdit').dialog('close');
+                }
+            }
+        ]
+    });
+    
+    $('#admMenu_dialogAddRole').dialog({
+        closed:true, modal:true, width:250, height:130,
+        buttons:[
+            {
+                text:'Tambah',
+                iconCls:'icon-ok', 
+                handler:function(){
+                    admMenu_doAddRole();
+                }
+            }
+        ]
+    });
+    
     $('#admMenuMainGrid').datagrid({
         columns: [[
                 {field: 'menu_id', title: 'ID', width: 100},
