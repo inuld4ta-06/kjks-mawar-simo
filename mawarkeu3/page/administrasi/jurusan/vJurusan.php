@@ -35,7 +35,7 @@
                 {field: 'mj_nama', title: 'Jurusan', width: 100}
             ]],
         toolbar: '#admJurusanMainGridToolbar',
-        pagination: true, rownumbers: true, height: 400,
+        pagination: true, rownumbers: true, fit: true,
         url: '<?= createUrl() ?>&act=data',
         singleSelect: true
     });
