@@ -10,7 +10,7 @@
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="admSiswa_doDeleteSiswa();">Hapus Siswa</a>
 </div>
 <div id="admSiswa_dialogAddEdit" class="easyui-dialog" closed="true" modal="true"
-     style="padding: 10px;height: 300px;"
+     style="padding: 10px;width:330px;height: 300px;"
      buttons="#admSiswa_dialogAddEdit_bt">
     <style>
         .admSiswa_dialogAddEdit_inputs {
@@ -49,7 +49,7 @@
                 {field: 'ms_kelas', title: 'Kelas', width: 100}
             ]],
         toolbar: '#admSiswaMainGridToolbar',
-        pagination: true, rownumbers: true, height: 400,
+        pagination: true, rownumbers: true, fit: true,
         url: '<?= createUrl() ?>&act=data',
         singleSelect: true
     });
