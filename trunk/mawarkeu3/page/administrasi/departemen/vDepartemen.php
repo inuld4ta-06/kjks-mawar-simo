@@ -24,7 +24,7 @@
                 {field: 'md_nama', title: 'Departemen', width: 100}
             ]],
         toolbar: '#admDepartemenMainGridToolbar',
-        pagination: true, rownumbers: true, height: 400,
+        pagination: true, rownumbers: true, fit: true,
         url: '<?= createUrl() ?>&act=data',
         singleSelect: true
     });
