@@ -71,7 +71,7 @@
                 {field: 'enabled', title: 'Aktif', width: 50}
             ]],
         toolbar: '#admMenuMainGridToolbar',
-        pagination: true, rownumbers: true, height: 400, pageSize:40,
+        pagination: true, rownumbers: true, fit: true, pageSize:40,
         url: '<?= createUrl() ?>&act=data',
         view: detailview, singleSelect: true,
         detailFormatter: function(index, row) {
