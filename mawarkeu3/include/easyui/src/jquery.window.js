@@ -1,12 +1,14 @@
+﻿/**
+ * jQuery EasyUI 1.3.6
+ * 
+ * Copyright (c) 2009-2014 www.jeasyui.com. All rights reserved.
+ *
+ * Licensed under the GPL license: http://www.gnu.org/licenses/gpl.txt
+ * To use it on other terms please contact us at info@jeasyui.com
+ *
+ */
 /**
  * window - jQuery EasyUI
- * 
- * Copyright (c) 2009-2013 www.jeasyui.com. All rights reserved.
- *
- * Licensed under the GPL or commercial licenses
- * To use it on other terms please contact us: info@jeasyui.com
- * http://www.gnu.org/licenses/gpl.txt
- * http://www.jeasyui.com/license_commercial.php
  * 
  * Dependencies:
  * 	 panel
@@ -18,10 +20,11 @@
 	function setSize(target, param){
 		var opts = $.data(target, 'window').options;
 		if (param){
-			if (param.width) opts.width = param.width;
-			if (param.height) opts.height = param.height;
-			if (param.left != null) opts.left = param.left;
-			if (param.top != null) opts.top = param.top;
+			$.extend(opts, param);
+//			if (param.width) opts.width = param.width;
+//			if (param.height) opts.height = param.height;
+//			if (param.left != null) opts.left = param.left;
+//			if (param.top != null) opts.top = param.top;
 		}
 		$(target).panel('resize', opts);
 	}
@@ -81,6 +84,7 @@
 	
 	function create(target){
 		var state = $.data(target, 'window');
+		var winClosed = state.options.closed;
 		var win = $(target).panel($.extend({}, state.options, {
 			border: false,
 			doSize: true,	// size the panel, the property undefined in window component
@@ -183,7 +187,7 @@
 		if (state.options.top == null){vcenter(target);}
 		moveWindow(target);
 		
-		if (state.options.closed == false){
+		if (!winClosed){
 			win.window('open');	// open the window
 		}
 	}
