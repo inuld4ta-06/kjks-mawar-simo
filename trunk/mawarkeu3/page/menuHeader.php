@@ -24,7 +24,7 @@ $menus = implode(",", $menu);
 
 // menu2 itu tadi ada di header mana aja
 $q3 = <<<q
-select * from m_menu where menu_id in (select parent_id from m_menu where menu_id in ($menus) and enabled=1) and type='MENU_HEADER'
+select * from m_menu where menu_id in (select parent_id from m_menu where menu_id in ($menus) and enabled=1) and type='MENU_HEADER' order by `order` asc
 q;
 
 foreach (pdoMysql_queryAll($q3) as $row3){
@@ -34,7 +34,7 @@ foreach (pdoMysql_queryAll($q3) as $row3){
 <a href="javascript:void(0)" class="easyui-menubutton" data-options="menu:'#menu$menuheaderName'">$menuheaderName</a>
 <div id="menu$menuheaderName" style="width:200px">
 h;
-        $q4 = "select * from m_menu where menu_id in ($menus) and parent_id=$menuheaderId";
+        $q4 = "select * from m_menu where menu_id in ($menus) and parent_id=$menuheaderId order by `order` asc";
         foreach (pdoMysql_queryAll($q4) as $row4){
             $menuName = $row4['name'];
             $menuPath = $row4['path'];
