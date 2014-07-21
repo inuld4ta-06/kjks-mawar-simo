@@ -11,7 +11,9 @@ switch ($act){
         $offset = ($page - 1) * $row;
         $dept = isset($post['dept']) ? $post['dept'] : '';
         $stts = isset($post['stts']) ? $post['stts'] : 'all';
-        echo json_encode($mdlLapPembSiswa->getLapPembSiswaData($dept, $stts, $offset, $row));
+        $tgfr = isset($post['tgfr']) ? $post['tgfr'] : '';
+        $tgto = isset($post['tgto']) ? $post['tgto'] : '';
+        echo json_encode($mdlLapPembSiswa->getLapPembSiswaData($dept, $stts, $tgfr, $tgto, $offset, $row));
         break;
     case 'comboSearchDepartemen':
         echo json_encode($mdlLapPembSiswa->getListDepartemen());
