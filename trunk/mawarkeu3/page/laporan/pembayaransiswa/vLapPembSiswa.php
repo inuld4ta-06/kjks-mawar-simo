@@ -2,6 +2,8 @@
 <div id="lapPembSiswaMainGridToolbar" style="padding:5px;">
     Departemen <input id="lapPembSiswaMainGridToolbarSearchDepartemen">
     Status <input id="lapPembSiswaMainGridToolbarSearchStatus">
+    Tanggal <input id="lapPembSiswaMainGridToolbarSearchTglFrom" class="easyui-datebox" style="width: 100px">
+    s/d <input id="lapPembSiswaMainGridToolbarSearchTglTo" class="easyui-datebox" style="width: 100px">
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="lapPembSiswa_doSearchPembSiswa();">Go</a><br>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="lapPembSiswa_doDeletePembSiswa();">Delete</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" onclick="lapPembSiswa_doUndoDeletePembSiswa();">Undo Delete</a>
@@ -54,23 +56,14 @@
     function lapPembSiswa_doSearchPembSiswa() {
         var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
         var stts = $('#lapPembSiswaMainGridToolbarSearchStatus').combobox('getValue');
+        var tgfr = $('#lapPembSiswaMainGridToolbarSearchTglFrom').datebox('getValue');
+        var tgto = $('#lapPembSiswaMainGridToolbarSearchTglTo').datebox('getValue');
         $('#lapPembSiswaMainGrid').datagrid({
-            queryParams:{dept:dept,stts: stts},
+            queryParams:{dept:dept,stts: stts, tgfr:tgfr, tgto:tgto},
             pageNumber:1
         });
     }
     
-    function lapPembSiswa_searchDepartemen() {
-        var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
-        var stts = $('#lapPembSiswaMainGridToolbarSearchStatus').combobox('getValue');
-        $('#lapPembSiswaMainGrid').datagrid({
-            queryParams: {
-                dept: dept,
-                stts: stts
-            },
-            pageNumber:1
-        });
-    }
     
     function lapPembSiswa_doDeletePembSiswa(){
         var g = $('#lapPembSiswaMainGrid').datagrid('getSelected');

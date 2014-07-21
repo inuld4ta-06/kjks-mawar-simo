@@ -11,25 +11,33 @@
  *
  * @author mzainularifin
  */
-class mLapPembSiswa extends mDbConn{
+class mLapPembSiswa extends mDbConn {
+
     //put your code here
-    public function getLapPembSiswaData($dept, $stts, $offset, $row) {
+    public function getLapPembSiswaData($dept, $stts, $tgfr, $tgto, $offset, $row) {
         $wheres = '';
         $arrFetch = array();
-        if(!empty($dept)){
+        if (!empty($dept)) {
             $where[] = "s.ms_departemen=:dept";
             $arrFetch[':dept'] = $dept;
         }
-        if(!empty($stts) && $stts == 'deleted'){
+        if (!empty($stts) && $stts == 'deleted') {
             $where[] = "p.pbyr_deletedate is not null";
         }
-        if(!empty($stts) && $stts == 'notdeleted'){
+        if (!empty($stts) && $stts == 'notdeleted') {
             $where[] = "p.pbyr_deletedate is null";
         }
-        if(count($where) > 0){
+        if (!empty($tgfr) && !empty($tgto)) {
+            $where[] = "(p.pbyr_createdate between '$tgfr' and ('$tgto' + INTERVAL 1 DAY))";
+        } elseif (!empty($tgfr) && empty($tgto)) {
+            $where[] = "(p.pbyr_createdate > '$tgfr')";
+        } elseif (empty($tgfr) && !empty($tgto)) {
+            $where[] = "(p.pbyr_createdate < '$tgto' + INTERVAL 1 DAY )";
+        }
+        if (count($where) > 0) {
             $wheres = "where " . implode(" and ", $where);
         }
-        
+
         $query = "
 select 
     p.pbyr_id,
@@ -52,7 +60,7 @@ left join m_transaksi t on t.mt_id = p.mt_id
 $wheres
 ";
         $queryLimit = "limit $offset, $row";
-        
+
         $restot = $this->fetchQuery("select count(*) as jum from ($query) a", $arrFetch);
         foreach ($restot as $rest) {
             $tot = $rest['jum'];
@@ -60,30 +68,30 @@ $wheres
         $res = $this->fetchQuery($query . $queryLimit, $arrFetch);
         return array('rows' => $res, 'total' => $tot);
     }
-    
-    
+
     public function getListDepartemen() {
         return $this->fetchQuery("select distinct(ms_departemen) md_nama from m_siswa order by md_nama asc");
     }
-    
+
     public function doDelPembayaran($pbyrid) {
         $db = $this->getConn();
         $username = $_SESSION['user_name'];
         $stmt = $db->query("update pembayaran set pbyr_deletedate=now(), pbyr_deleteby='$username' where pbyr_id=$pbyrid");
-        if($stmt->rowCount() > 0){
+        if ($stmt->rowCount() > 0) {
             return array('success' => true);
         } else {
             return array('success' => false, 'msg' => 'Ada kesalahan');
         }
     }
-    
+
     public function doUndoDelPembayaran($pbyrid) {
         $db = $this->getConn();
         $stmt = $db->query("update pembayaran set pbyr_deletedate=null, pbyr_deleteby=null where pbyr_id=$pbyrid");
-        if($stmt->rowCount() > 0){
+        if ($stmt->rowCount() > 0) {
             return array('success' => true);
         } else {
             return array('success' => false, 'msg' => 'Ada kesalahan');
         }
     }
+
 }
