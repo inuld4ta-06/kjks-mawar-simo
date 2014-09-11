@@ -9,17 +9,11 @@ $username = $_SESSION['user_name'];
         <title>Aplikasi Keuangan Yayasan Pendidikan Matholi'ul Anwar Simo Sungelebak Karanggeneng Lamongan</title>
         <link rel="shortcut icon" href="favicon.ico">
         <link rel="icon" href="favicon.ico" type="image/x-icon" >
-        <!--<link rel="stylesheet" type="text/css" href="http://www.jeasyui.com/easyui/themes/<?= $themes ?>/easyui.css">-->
         <link rel="stylesheet" type="text/css" href="include/easyui/themes/default/easyui.css">
-        <!--<link rel="stylesheet" type="text/css" href="http://www.jeasyui.com/easyui/themes/icon.css">-->
         <link rel="stylesheet" type="text/css" href="include/easyui/themes/icon.css">
-        <!--<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>-->
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-        <!--<script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>-->
+        <script type="text/javascript" src="include/easyui/jquery.min.js"></script>
         <script type="text/javascript" src="include/easyui/jquery.easyui.min.js"></script>
-        <!--<script type="text/javascript" src="http://www.jeasyui.com/easyui/datagrid-detailview.js"></script>-->
-        <script type="text/javascript" src="http://www.jeasyui.com/easyui/datagrid-detailview.js"></script>
-        <!--<script type="text/javascript" src="http://www.jeasyui.com/easyui/jquery.edatagrid.js"></script>-->
+        <script type="text/javascript" src="include/easyui/datagrid-detailview.js"></script>
         <?php
         /* ---------------- Definisi situs ---------------- */
         define("HEADERKETERANGANSEKOLAH01", "Sistem Keuangan");
@@ -86,18 +80,6 @@ $username = $_SESSION['user_name'];
         </div>
         <div data-options="region:'south'" style="height:25px;padding:2px;text-align: center;font-style: italic;font-size: 10px;">
             <span><?= FOOTER_TEXT ?></span>
-            <span style="float: right;margin-top: -3px;">
-                <form id="kjksmawarsimo_themes_form" name="kjksmawarsimo_themes_form" method="post" action="" style="text-align: right;">
-                    Theme 
-                    <select id="themes" name="themes" onchange="document.forms['kjksmawarsimo_themes_form'].submit();">
-                        <option value="black" <?= ($themes == 'black') ? ' selected' : ''; ?>>Black</option>
-                        <option value="bootstrap" <?= ($themes == 'bootstrap') ? ' selected' : ''; ?>>Bootstrap</option>
-                        <option value="default" <?= ($themes == 'default') ? ' selected' : ''; ?>>Default</option>
-                        <option value="gray" <?= ($themes == 'gray') ? ' selected' : ''; ?>>Gray</option>
-                        <option value="metro" <?= ($themes == 'metro') ? ' selected' : ''; ?>>Metro</option>
-                    </select>
-                </form>
-            </span>
         </div>
 
     </body>
