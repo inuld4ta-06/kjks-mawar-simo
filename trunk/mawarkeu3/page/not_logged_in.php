@@ -19,7 +19,7 @@
             <div class="form-bg">
                 <form method="post" action="index.php" name="loginform">
                     <h2>KJKS Mawar Simo - Login</h2>
-                    <p><input type="text" placeholder="Username" name="user_name" required autofocus=""/></p>
+                    <p><input type="text" placeholder="Username" name="user_name" required autofocus="" autocomplete="off"/></p>
                     <p><input type="password" placeholder="Password" name="user_password" required /></p>
                     <label for="remember"></label>
                     <span style="color: red;">
