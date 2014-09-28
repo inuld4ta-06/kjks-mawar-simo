@@ -1,10 +1,15 @@
 <table id="lapPembSiswaMainGrid"></table>
 <div id="lapPembSiswaMainGridToolbar" style="padding:5px;">
     Departemen <input id="lapPembSiswaMainGridToolbarSearchDepartemen">
-    Status <input id="lapPembSiswaMainGridToolbarSearchStatus">
+    Jurusan <input id="lapPembSiswaMainGridToolbarSearchJurusan">
+    Kelas <input id="lapPembSiswaMainGridToolbarSearchKelas">
+    Nama <input id="lapPembSiswaMainGridToolbarSearchNama">
+    <br>
+    Jenis Pembayaran <input id="lapPembSiswaMainGridToolbarSearchJnsPemby">
     Tanggal <input id="lapPembSiswaMainGridToolbarSearchTglFrom" class="easyui-datebox" style="width: 100px">
     s/d <input id="lapPembSiswaMainGridToolbarSearchTglTo" class="easyui-datebox" style="width: 100px">
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="lapPembSiswa_doSearchPembSiswa();">Go</a><br>
+    Status <input id="lapPembSiswaMainGridToolbarSearchStatus">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="lapPembSiswa_doSearchPembSiswa();">Cari</a><br>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="lapPembSiswa_doDeletePembSiswa();">Delete</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" onclick="lapPembSiswa_doUndoDeletePembSiswa();">Undo Delete</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" onclick="lapPembSiswa_doSaveLapPembSiswa();">Simpan ke Excel</a>
@@ -40,8 +45,36 @@
     });
     
     $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox({
-        textField: 'md_nama', valueField: 'md_nama', panelHeight: 'auto',
-        url: '<?= createUrl() ?>&act=comboSearchDepartemen'
+        textField: 'md_nama', valueField: 'md_nama', panelHeight: 250,
+        url: '<?= createUrl() ?>&act=comboSearchDepartemen',
+        onSelect: function(rec) {
+            $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('clear');
+            $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('clear');
+            $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox('clear');
+            var jurusanUrl = "<?= createUrl() ?>&act=comboSearchJurusan&dept=" + rec.md_nama;
+            $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('reload', jurusanUrl);
+            var jnsPembyUrl = "<?= createUrl() ?>&act=comboSearchJnsPemby&dept=" + rec.md_nama;
+            $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox('reload', jnsPembyUrl);
+        }
+    });
+    
+    $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox({
+        textField: 'mj_nama', valueField: 'mj_nama', panelHeight: 250,
+        url: '<?= createUrl() ?>&act=comboSearchJurusan',
+        onSelect: function(rec) {
+            $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('clear');
+            var deptnama = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
+            var kelasUrl = "<?= createUrl() ?>&act=comboSearchKelas&dept=" + deptnama + "&jurs=" + rec.mj_nama;
+            $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('reload', kelasUrl);
+        }
+    });
+    
+    $('#lapPembSiswaMainGridToolbarSearchKelas').combobox({
+        textField: 'mkls_nama', valueField: 'mkls_nama', panelHeight: 250
+    });
+    
+    $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox({
+        textField: 'mt_jenis', valueField: 'mt_jenis', panelHeight: 250, panelWidth: 450
     });
     
     $('#lapPembSiswaMainGridToolbarSearchStatus').combobox({
@@ -55,11 +88,15 @@
     
     function lapPembSiswa_doSearchPembSiswa() {
         var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
+        var jurs = $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('getValue');
+        var kels = $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('getValue');
+        var nama = $('#lapPembSiswaMainGridToolbarSearchNama').val();
+        var jnsp = $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox('getValue');
         var stts = $('#lapPembSiswaMainGridToolbarSearchStatus').combobox('getValue');
         var tgfr = $('#lapPembSiswaMainGridToolbarSearchTglFrom').datebox('getValue');
         var tgto = $('#lapPembSiswaMainGridToolbarSearchTglTo').datebox('getValue');
         $('#lapPembSiswaMainGrid').datagrid({
-            queryParams:{dept:dept,stts: stts, tgfr:tgfr, tgto:tgto},
+            queryParams:{dept:dept, jurs:jurs, kels:kels, nama:nama, jnsp:jnsp, stts: stts, tgfr:tgfr, tgto:tgto},
             pageNumber:1
         });
     }
@@ -119,6 +156,18 @@
         } else {
             alert('pilih salah satu data terlebih dulu');
         }
+    }
+    
+    function lapPembSiswa_doSaveLapPembSiswa(){
+        var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
+        var jurs = $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('getValue');
+        var kels = $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('getValue');
+        var nama = $('#lapPembSiswaMainGridToolbarSearchNama').val();
+        var jnsp = $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox('getValue');
+        var stts = $('#lapPembSiswaMainGridToolbarSearchStatus').combobox('getValue');
+        var tgfr = $('#lapPembSiswaMainGridToolbarSearchTglFrom').datebox('getValue');
+        var tgto = $('#lapPembSiswaMainGridToolbarSearchTglTo').datebox('getValue');
+        window.open('<?= createUrl() ?>&act=saveLapPemb&dept=' + dept + '&jurs=' + jurs + '&kels=' + kels + '&nama=' + nama + '&jnsp=' + jnsp + '&stts=' + stts + '&tgfr=' + tgfr + '&tgto=' + tgto);
     }
     
 </script>
