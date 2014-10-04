@@ -9,6 +9,7 @@
     Tanggal <input id="lapPembSiswaMainGridToolbarSearchTglFrom" class="easyui-datebox" style="width: 100px">
     s/d <input id="lapPembSiswaMainGridToolbarSearchTglTo" class="easyui-datebox" style="width: 100px">
     Status <input id="lapPembSiswaMainGridToolbarSearchStatus">
+    Teller <input id="lapPembSiswaMainGridToolbarSearchTeller">
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="lapPembSiswa_doSearchPembSiswa();">Cari</a><br>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" onclick="lapPembSiswa_doDeletePembSiswa();">Delete</a>
     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" onclick="lapPembSiswa_doUndoDeletePembSiswa();">Undo Delete</a>
@@ -42,6 +43,11 @@
         pagination: true, rownumbers: true, fit: true,
         url: '<?= createUrl() ?>&act=data',
         singleSelect: true, pageSize:40
+    });
+    
+    $('#lapPembSiswaMainGridToolbarSearchTeller').combobox({
+        textField: 'teller_nama', valueField: 'teller_nama', panelHeight: 250,
+        url: '<?= createUrl() ?>&act=comboSearchTeller'
     });
     
     $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox({
@@ -87,6 +93,7 @@
     });
     
     function lapPembSiswa_doSearchPembSiswa() {
+        var tllr = $('#lapPembSiswaMainGridToolbarSearchTeller').combobox('getValue');
         var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
         var jurs = $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('getValue');
         var kels = $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('getValue');
@@ -96,7 +103,7 @@
         var tgfr = $('#lapPembSiswaMainGridToolbarSearchTglFrom').datebox('getValue');
         var tgto = $('#lapPembSiswaMainGridToolbarSearchTglTo').datebox('getValue');
         $('#lapPembSiswaMainGrid').datagrid({
-            queryParams:{dept:dept, jurs:jurs, kels:kels, nama:nama, jnsp:jnsp, stts: stts, tgfr:tgfr, tgto:tgto},
+            queryParams:{tllr:tllr, dept:dept, jurs:jurs, kels:kels, nama:nama, jnsp:jnsp, stts: stts, tgfr:tgfr, tgto:tgto},
             pageNumber:1
         });
     }

@@ -10,6 +10,7 @@ switch ($act){
         $page = isset($post['page']) ? $post['page'] : '1';
         $row = isset($post['rows']) ? $post['rows'] : '10';
         $offset = ($page - 1) * $row;
+        $tllr = isset($post['tllr']) ? $post['tllr'] : '';
         $dept = isset($post['dept']) ? $post['dept'] : '';
         $jurs = isset($post['jurs']) ? $post['jurs'] : '';
         $kels = isset($post['kels']) ? $post['kels'] : '';
@@ -18,7 +19,10 @@ switch ($act){
         $stts = isset($post['stts']) ? $post['stts'] : 'all';
         $tgfr = isset($post['tgfr']) ? $post['tgfr'] : '';
         $tgto = isset($post['tgto']) ? $post['tgto'] : '';
-        echo json_encode($mdlLapPembSiswa->getLapPembSiswaData($dept, $jurs, $kels, $nama, $jnsp, $stts, $tgfr, $tgto, $offset, $row));
+        echo json_encode($mdlLapPembSiswa->getLapPembSiswaData($tllr, $dept, $jurs, $kels, $nama, $jnsp, $stts, $tgfr, $tgto, $offset, $row));
+        break;
+    case 'comboSearchTeller':
+        echo json_encode($mdlLapPembSiswa->getListTeller());
         break;
     case 'comboSearchDepartemen':
         echo json_encode($mdlLapPembSiswa->getListDepartemen());

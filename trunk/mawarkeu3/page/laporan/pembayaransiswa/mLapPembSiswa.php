@@ -14,9 +14,13 @@
 class mLapPembSiswa extends mDbConn {
 
     //put your code here
-    public function getLapPembSiswaData($dept, $jurs, $kels, $nama, $jnsp, $stts, $tgfr, $tgto, $offset, $row) {
+    public function getLapPembSiswaData($tllr, $dept, $jurs, $kels, $nama, $jnsp, $stts, $tgfr, $tgto, $offset, $row) {
         $wheres = '';
         $arrFetch = array();
+        if (!empty($tllr)) {
+            $where[] = "p.pbyr_createby=:tllr";
+            $arrFetch[':tllr'] = $tllr;
+        }
         if (!empty($dept)) {
             $where[] = "s.ms_departemen=:dept";
             $arrFetch[':dept'] = $dept;
@@ -87,6 +91,10 @@ $wheres
 
     public function getListDepartemen() {
         return $this->fetchQuery("select distinct(ms_departemen) md_nama from m_siswa order by md_nama asc");
+    }
+
+    public function getListTeller() {
+        return $this->fetchQuery("select distinct(pbyr_createby) teller_nama from pembayaran order by teller_nama asc");
     }
 
     public function getListJurusan($dept) {
