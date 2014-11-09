@@ -5,7 +5,19 @@ class mPembayaranSiswa extends mDbConn {
 
     public function getStrukData($msid, $print = false) {
         $query = <<<q
-select p.pbyr_id, s.ms_nama, s.ms_departemen, s.ms_jurusan, s.ms_kelas, t.mt_jenis, p.pbyr_tahun, p.pbyr_bulan, format(p.pbyr_nominal,0,'id_ID') as pbyr_nominal, p.pbyr_nominal as pbyr_nominal_fortotal, p.pbyr_text
+select 
+    p.pbyr_id, 
+    s.ms_nama, 
+    s.ms_departemen, 
+    s.ms_jurusan, 
+    s.ms_kelas, 
+    t.mt_jenis, 
+    p.pbyr_tahun, 
+    p.pbyr_bulan, 
+    format(p.pbyr_nominal,0,'id_ID') as pbyr_nominal, 
+    p.pbyr_nominal as pbyr_nominal_fortotal, 
+    p.pbyr_text,
+    p.pbyr_createby
 from pembayaran p
 left join m_transaksi t on t.mt_id = p.mt_id
 left join m_siswa s on s.ms_id = p.ms_id
@@ -20,6 +32,7 @@ q;
             $siswaDepartemen = $data['ms_departemen'];
             $siswaJurusan = $data['ms_jurusan'];
             $siswaKelas = $data['ms_kelas'];
+            $teller = $data['pbyr_createby'];
             $listTransaksi[$no]['pbyr_id'] = $data['pbyr_id'];
             $listTransaksi[$no]['mt_jenis'] = $data['mt_jenis'];
             $listTransaksi[$no]['pbyr_tahun'] = $data['pbyr_tahun'];
@@ -31,35 +44,65 @@ q;
         }
         $total = 0;
         $html = array();
+        
+        if($print){
+            $html[] = "<html><body onload='window.print()'>";
+        }
 
-        $html[] = "<div style='font-family:courier; padding:10px;'>";
+        $html[] = "<div style='font-family:arial; padding:10px;'>";
+        $html[] = "<style>"
+                . "@media print{"
+                . "* {"
+                . "font-size: 9px;"
+                . "}"
+                . "}"
+                . "</style>";
         $html[] = "<div style='text-align:center; font-weight:bold'>KJKS MATHOLI'UL ANWAR<br>Jl. Raya Simo Sungelebak Karanggeneng Lamongan</div>";
-        $html[] = "Siswa: $namasiswa, ($siswaDepartemen - $siswaJurusan - $siswaKelas)<br><br>";
+        $html[] = "<table width='100%' style='border-bottom: 1px dashed #000'>"
+                . "<tr>"
+                . "<td>Teller: $teller</td>"
+                . "<td align='right'>Tgl: " . date("d/m/Y H:i:s") . "</td>"
+                . "</tr>"
+                . "<tr>"
+                . "<td colspan=2 align='center'>$namasiswa, ($siswaDepartemen - $siswaJurusan - $siswaKelas)</td>"
+                . "</tr>"
+                . "</table>";
         $html[] = "<table width='100%'>";
-        $html[] = "<tr><td>Nama Transaksi</td><td>Tahun, bulan</td><td>Nominal</td></tr>";
         foreach ($listTransaksi as $trans) {
-            $html[] = "<tr><td>" . $trans['mt_jenis'] . "</td><td>" . $trans['pbyr_tahun'] . ", " . $trans['pbyr_bulan'] . "</td><td>" . $trans['pbyr_nominal'] . "</td></tr>";
-            $html[] = "<tr><td colspan=2>" . $trans['pbyr_text'] . "</td><td></td></tr>";
+            $html[] = "<tr>"
+                    . "<td width='60%'>" . $trans['mt_jenis'] . "</td>"
+                    . "<td width='20%'>" . $trans['pbyr_tahun'] . ", " . $trans['pbyr_bulan'] . "</td>"
+                    . "<td width='20%' align='right'>" . $trans['pbyr_nominal'] . "</td>"
+                    . "</tr>";
+            $html[] = "<tr><td colspan=3 style='padding-bottom: 10px;'>" . $trans['pbyr_text'] . "</td><td></td></tr>";
             $total = $total + $trans['pbyr_nominal_fortotal'];
         }
         setlocale(LC_MONETARY, 'id_ID.UTF-8');
-        $totalll = number_format($total,0,',','.');
-        $html[] = "<tr><td colspan=2 align=center>TOTAL</td><td>$totalll</td></tr>";
+        $totalll = number_format($total, 0, ',', '.');
+        $html[] = "<tr>"
+                . "<td style='border-top: 1px dashed #000' colspan=2 align=center>TOTAL</td>"
+                . "<td style='border-top: 1px dashed #000' align='right'>$totalll</td>"
+                . "</tr>";
         $html[] = "</table>";
         $html[] = "</div>";
-        $htmls = implode('', $html);
         
         if($print){
-            $this->doSimpanStruk($msid);
+            $html[] = "</body></html>";
         }
         
+        $htmls = implode('', $html);
+
+        if ($print) {
+            $this->doSimpanStruk($msid);
+        }
+
         return $htmls;
     }
-    
+
     public function doSimpanStruk($msid) {
         $db = $this->getConn();
         $querycekNmrStruk = "select struk_id from pembayaran order by struk_id desc limit 1";
-        foreach ($db->query($querycekNmrStruk) as $row){
+        foreach ($db->query($querycekNmrStruk) as $row) {
             $lastStrukNum = $row['struk_id'];
         }
         $lastStrukNum++;
@@ -111,7 +154,7 @@ q;
     public function getComboDataSiswa($q) {
         $query = "select ms_id, ms_nis, ms_nisn, ms_nama, ms_departemen, ms_jurusan, ms_kelas "
                 . "from m_siswa "
-                . "where ms_id like '%$q%' or ms_nis like '%$q%' or ms_nisn like '%$q%' or ms_nama like '%$q%'"
+                . "where (ms_id like '%$q%' or ms_nis like '%$q%' or ms_nisn like '%$q%' or ms_nama like '%$q%') and ms_active=1 "
                 . "limit 20";
         $data = $this->fetchQuery($query);
         return $data;
@@ -214,12 +257,12 @@ q;
             return array('success' => false, 'msg' => 'Siswa sudah pernah membayar');
         }
     }
-    
+
     public function doHapusPbyr($pbyrid, $petugas) {
         try {
             $db = $this->getConn();
             $affectedRows = $db->exec("update pembayaran set pbyr_deletedate=now(), pbyr_deleteby='$petugas' where pbyr_id=$pbyrid");
-            if($affectedRows > 0){
+            if ($affectedRows > 0) {
                 return array('success' => true);
             } else {
                 return array('success' => false, 'msg' => $db->errorInfo());
