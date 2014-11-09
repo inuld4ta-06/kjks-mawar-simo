@@ -168,7 +168,9 @@
 
     function cetakStruk() {
         var d = getCriteriaPencarian();
-        window.open('<?= createUrl() ?>&act=cetakStruk&msid=' + d.msid);
+        w = window.open('<?= createUrl() ?>&act=cetakStruk&msid=' + d.msid);
+//        w.print();
+//        w.close();
     }
 
 </script>
