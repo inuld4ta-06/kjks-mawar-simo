@@ -222,18 +222,18 @@
                 </select>
                 Bulan: <select id='pembsis_div_jenisDet_inputBulan' onchange="getDataPembayaran();">
                     <option value="all">Semua</option>
-                    <option value="1" <?= date("m") == 1 ? 'selected="selected"' : '' ?>>Januari</option>
-                    <option value="2" <?= date("m") == 2 ? 'selected="selected"' : '' ?>>Februari</option>
-                    <option value="3" <?= date("m") == 3 ? 'selected="selected"' : '' ?>>Maret</option>
-                    <option value="4" <?= date("m") == 4 ? 'selected="selected"' : '' ?>>April</option>
-                    <option value="5" <?= date("m") == 5 ? 'selected="selected"' : '' ?>>Mei</option>
-                    <option value="6" <?= date("m") == 6 ? 'selected="selected"' : '' ?>>Juni</option>
-                    <option value="7" <?= date("m") == 7 ? 'selected="selected"' : '' ?>>Juli</option>
-                    <option value="8" <?= date("m") == 8 ? 'selected="selected"' : '' ?>>Agustus</option>
-                    <option value="9" <?= date("m") == 9 ? 'selected="selected"' : '' ?>>September</option>
-                    <option value="10" <?= date("m") == 10 ? 'selected="selected"' : '' ?>>Oktober</option>
-                    <option value="11" <?= date("m") == 11 ? 'selected="selected"' : '' ?>>November</option>
-                    <option value="12" <?= date("m") == 12 ? 'selected="selected"' : '' ?>>Desember</option>
+                    <option value="1" <?= date("m") == 1 ? 'selected="selected"' : '' ?>>01. Januari</option>
+                    <option value="2" <?= date("m") == 2 ? 'selected="selected"' : '' ?>>02. Februari</option>
+                    <option value="3" <?= date("m") == 3 ? 'selected="selected"' : '' ?>>03. Maret</option>
+                    <option value="4" <?= date("m") == 4 ? 'selected="selected"' : '' ?>>04. April</option>
+                    <option value="5" <?= date("m") == 5 ? 'selected="selected"' : '' ?>>05. Mei</option>
+                    <option value="6" <?= date("m") == 6 ? 'selected="selected"' : '' ?>>06. Juni</option>
+                    <option value="7" <?= date("m") == 7 ? 'selected="selected"' : '' ?>>07. Juli</option>
+                    <option value="8" <?= date("m") == 8 ? 'selected="selected"' : '' ?>>08. Agustus</option>
+                    <option value="9" <?= date("m") == 9 ? 'selected="selected"' : '' ?>>09. September</option>
+                    <option value="10" <?= date("m") == 10 ? 'selected="selected"' : '' ?>>10. Oktober</option>
+                    <option value="11" <?= date("m") == 11 ? 'selected="selected"' : '' ?>>11. November</option>
+                    <option value="12" <?= date("m") == 12 ? 'selected="selected"' : '' ?>>12. Desember</option>
                 </select>
                 Nominal: 
                 <select onchange='getDefaultPembayaran();' id='pembsis_div_jenisDet_inputTypeNominal'>

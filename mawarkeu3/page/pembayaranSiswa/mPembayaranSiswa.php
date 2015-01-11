@@ -4,13 +4,36 @@
 class mPembayaranSiswa extends mDbConn {
 
     public function getStrukData($msid, $print = false) {
+        $qry0 = <<<q
+select 
+    s.ms_nama, 
+    sh.ms_departemen, 
+    sh.ms_jurusan, 
+    sh.ms_kelas, 
+    p.pbyr_createby
+from pembayaran p
+left join m_siswa s on s.ms_id = p.ms_id
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((date_format(p.pbyr_createdate, "%Y") between year(sh.ms_begdate) and year(sh.ms_enddate)) and (date_format(p.pbyr_createdate, "%m") between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+where p.ms_id=$msid and p.struk_id=0 and p.pbyr_deletedate is null
+order by p.pbyr_createdate desc
+limit 1
+q;
+        $namasiswa = '';
+        foreach ($this->fetchQuery($qry0) as $data0) {
+            $namasiswa = $data0['ms_nama'];
+            $siswaDepartemen = $data0['ms_departemen'];
+            $siswaJurusan = $data0['ms_jurusan'];
+            $siswaKelas = $data0['ms_kelas'];
+            $teller = $data0['pbyr_createby'];
+        }
+        
         $query = <<<q
 select 
     p.pbyr_id, 
     s.ms_nama, 
-    s.ms_departemen, 
-    s.ms_jurusan, 
-    s.ms_kelas, 
+    sh.ms_departemen, 
+    sh.ms_jurusan, 
+    sh.ms_kelas, 
     t.mt_jenis, 
     p.pbyr_tahun, 
     p.pbyr_bulan, 
@@ -21,18 +44,13 @@ select
 from pembayaran p
 left join m_transaksi t on t.mt_id = p.mt_id
 left join m_siswa s on s.ms_id = p.ms_id
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
 where p.ms_id=$msid and p.struk_id=0 and p.pbyr_deletedate is null
 order by p.mt_id asc, p.pbyr_tahun asc, p.pbyr_bulan asc
 q;
-        $namasiswa = '';
         $listTransaksi = array();
         $no = 1;
         foreach ($this->fetchQuery($query) as $data) {
-            $namasiswa = $data['ms_nama'];
-            $siswaDepartemen = $data['ms_departemen'];
-            $siswaJurusan = $data['ms_jurusan'];
-            $siswaKelas = $data['ms_kelas'];
-            $teller = $data['pbyr_createby'];
             $listTransaksi[$no]['pbyr_id'] = $data['pbyr_id'];
             $listTransaksi[$no]['mt_jenis'] = $data['mt_jenis'];
             $listTransaksi[$no]['pbyr_tahun'] = $data['pbyr_tahun'];
@@ -152,20 +170,33 @@ q;
     }
 
     public function getComboDataSiswa($q) {
-        $query = "select ms_id, ms_nis, ms_nisn, ms_nama, ms_departemen, ms_jurusan, ms_kelas "
-                . "from m_siswa "
-                . "where (ms_id like '%$q%' or ms_nis like '%$q%' or ms_nisn like '%$q%' or ms_nama like '%$q%') and ms_active=1 "
-                . "limit 20";
+        $dateNow = date("Ymd");
+        $query = <<<q
+select 
+    s.ms_id, s.ms_nis, s.ms_nisn, s.ms_nama, sh.ms_departemen, sh.ms_jurusan, sh.ms_kelas 
+from 
+    m_siswa s
+    left join m_siswa_hist sh on sh.ms_id = s.ms_id and ('$dateNow' between sh.ms_begdate and sh.ms_enddate)
+where 
+    (s.ms_id like '%$q%' or s.ms_nis like '%$q%' or s.ms_nisn like '%$q%' or s.ms_nama like '%$q%') 
+    and s.ms_active=1 
+limit 20
+q;
         $data = $this->fetchQuery($query);
         return $data;
     }
 
     public function loadJnsPmbyrn($ms_id) {
+        $dateNow = date("Ymd");
         $query = <<<q
-                select d.md_id
-            from m_siswa s
-            left join m_departemen d on d.md_nama=s.ms_departemen
-            where s.ms_id='$ms_id'
+select 
+    d.md_id
+from 
+    m_siswa_hist s
+    left join m_departemen d on d.md_nama=s.ms_departemen
+where 
+    (s.ms_id='$ms_id')
+    and ('$dateNow' between s.ms_begdate and s.ms_enddate)
 q;
         $getSiswaDetail = $this->fetchQuery($query);
         if (count($getSiswaDetail) > 0) {
