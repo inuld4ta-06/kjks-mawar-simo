@@ -22,15 +22,15 @@ class mLapPembSiswa extends mDbConn {
             $arrFetch[':tllr'] = $tllr;
         }
         if (!empty($dept)) {
-            $where[] = "s.ms_departemen=:dept";
+            $where[] = "sh.ms_departemen=:dept";
             $arrFetch[':dept'] = $dept;
         }
         if (!empty($jurs)) {
-            $where[] = "s.ms_jurusan=:jurs";
+            $where[] = "sh.ms_jurusan=:jurs";
             $arrFetch[':jurs'] = $jurs;
         }
         if (!empty($kels)) {
-            $where[] = "s.ms_kelas=:kels";
+            $where[] = "sh.ms_kelas=:kels";
             $arrFetch[':kels'] = $kels;
         }
         if (!empty($nama)) {
@@ -58,7 +58,7 @@ class mLapPembSiswa extends mDbConn {
             $wheres = "where (" . implode(") and (", $where) . ")";
         }
 
-        $query = "
+        $query = <<<q
 select 
     p.pbyr_id,
     p.struk_id, 
@@ -69,7 +69,7 @@ select
     format(p.pbyr_nominal, 0, 'id_ID') as pbyr_nominal, 
     s.ms_nis, 
     s.ms_nama, 
-    concat(s.ms_departemen, ' - ', s.ms_jurusan, ' - ', s.ms_kelas) as ms_kelas, 
+    concat(sh.ms_departemen, ' - ', sh.ms_jurusan, ' - ', sh.ms_kelas) as ms_kelas, 
     t.mt_jenis,
     p.pbyr_deletedate,
     p.pbyr_deleteby
@@ -77,8 +77,9 @@ from
 pembayaran p
 left join m_siswa s on s.ms_id = p.ms_id
 left join m_transaksi t on t.mt_id = p.mt_id
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
 $wheres
-";
+q;
         $queryLimit = "limit $offset, $row";
 
         $restot = $this->fetchQuery("select count(*) as jum from ($query) a", $arrFetch);
@@ -86,7 +87,22 @@ $wheres
             $tot = $rest['jum'];
         }
         $res = $this->fetchQuery($query . $queryLimit, $arrFetch);
-        return array('rows' => $res, 'total' => $tot);
+        $query_footer_total = <<<q
+select 
+    format(sum(pbyr_nominal), 0, 'id_ID') as pbyr_total
+from 
+    pembayaran p
+    left join m_siswa s on s.ms_id = p.ms_id
+    left join m_transaksi t on t.mt_id = p.mt_id
+    left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+$wheres
+q;
+        $res_foot_tot = $this->fetchQuery($query_footer_total, $arrFetch);
+        foreach ($res_foot_tot as $elis){
+            $footer_total = $elis['pbyr_total'];
+        }
+        $footer = array(array('mt_jenis' => 'TOTAL', 'pbyr_nominal' => $footer_total));
+        return array('rows' => $res, 'total' => $tot, 'footer' => $footer);
     }
 
     public function getListDepartemen() {
@@ -163,16 +179,20 @@ order by t.mt_jenis asc");
 
         $wheres = '';
         $arrFetch = array();
+        if (!empty($get['tllr'])) {
+            $where[] = "p.pbyr_createby=:tllr";
+            $arrFetch[':tllr'] = $get['tllr'];
+        }
         if (!empty($get['dept'])) {
-            $where[] = "s.ms_departemen=:dept";
+            $where[] = "sh.ms_departemen=:dept";
             $arrFetch[':dept'] = $get['dept'];
         }
         if (!empty($get['jurs'])) {
-            $where[] = "s.ms_jurusan=:jurs";
+            $where[] = "sh.ms_jurusan=:jurs";
             $arrFetch[':jurs'] = $get['jurs'];
         }
         if (!empty($get['kels'])) {
-            $where[] = "s.ms_kelas=:kels";
+            $where[] = "sh.ms_kelas=:kels";
             $arrFetch[':kels'] = $get['kels'];
         }
         if (!empty($get['nama'])) {
@@ -183,24 +203,24 @@ order by t.mt_jenis asc");
             $where[] = "t.mt_jenis=:jnsp";
             $arrFetch[':jnsp'] = $get['jnsp'];
         }
-        if (!empty($stts) && $stts == 'deleted') {
+        if (!empty($get['stts']) && $get['stts'] == 'deleted') {
             $where[] = "p.pbyr_deletedate is not null";
         }
-        if (!empty($stts) && $stts == 'notdeleted') {
+        if (!empty($get['stts']) && $get['stts'] == 'notdeleted') {
             $where[] = "p.pbyr_deletedate is null";
         }
-        if (!empty($tgfr) && !empty($tgto)) {
-            $where[] = "(p.pbyr_createdate between '$tgfr' and ('$tgto' + INTERVAL 1 DAY))";
-        } elseif (!empty($tgfr) && empty($tgto)) {
-            $where[] = "(p.pbyr_createdate > '$tgfr')";
-        } elseif (empty($tgfr) && !empty($tgto)) {
-            $where[] = "(p.pbyr_createdate < '$tgto' + INTERVAL 1 DAY )";
+        if (!empty($get['tgfr']) && !empty($get['tgto'])) {
+            $where[] = "(p.pbyr_createdate between '" . $get['tgfr'] . "' and ('" . $get['tgto'] . "' + INTERVAL 1 DAY))";
+        } elseif (!empty($get['tgfr']) && empty($get['tgto'])) {
+            $where[] = "(p.pbyr_createdate > '" . $get['tgfr'] . "')";
+        } elseif (empty($get['tgfr']) && !empty($get['tgto'])) {
+            $where[] = "(p.pbyr_createdate < '" . $get['tgto'] . "' + INTERVAL 1 DAY )";
         }
         if (count($where) > 0) {
             $wheres = "where (" . implode(") and (", $where) . ")";
         }
 
-        $query = "
+        $query = <<<q
 select 
     p.pbyr_id,
     p.struk_id, 
@@ -211,7 +231,7 @@ select
     format(p.pbyr_nominal, 0, 'id_ID') as pbyr_nominal, 
     s.ms_nis, 
     s.ms_nama, 
-    concat(s.ms_departemen, ' - ', s.ms_jurusan, ' - ', s.ms_kelas) as ms_kelas, 
+    concat(sh.ms_departemen, ' - ', sh.ms_jurusan, ' - ', sh.ms_kelas) as ms_kelas, 
     t.mt_jenis,
     p.pbyr_deletedate,
     p.pbyr_deleteby
@@ -219,8 +239,9 @@ from
 pembayaran p
 left join m_siswa s on s.ms_id = p.ms_id
 left join m_transaksi t on t.mt_id = p.mt_id
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
 $wheres
-";
+q;
 
         $res = $this->fetchQuery($query, $arrFetch);
         
@@ -254,6 +275,35 @@ $wheres
             echo "<td>" . $row['pbyr_deleteby'] . "</td>";
             echo "</tr>";
         }
+        
+        $query_footer_total = <<<q
+select 
+    format(sum(pbyr_nominal), 0, 'id_ID') as pbyr_total
+from 
+    pembayaran p
+    left join m_siswa s on s.ms_id = p.ms_id
+    left join m_transaksi t on t.mt_id = p.mt_id
+    left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+$wheres
+q;
+        $res_foot_tot = $this->fetchQuery($query_footer_total, $arrFetch);
+        foreach ($res_foot_tot as $elis){
+            $footer_total = $elis['pbyr_total'];
+        }
+
+        echo "<tr>";
+        echo "<td></td>";
+        echo "<td></td>";
+        echo "<td></td>";
+        echo "<td>TOTAL</td>";
+        echo "<td></td>";
+        echo "<td></td>";
+        echo "<td>$footer_total</td>";
+        echo "<td></td>";
+        echo "<td></td>";
+        echo "<td></td>";
+        echo "<td></td>";
+        echo "</tr>";
         echo "</table>";
     }
 

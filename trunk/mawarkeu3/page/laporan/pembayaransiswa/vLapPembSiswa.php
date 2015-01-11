@@ -42,7 +42,8 @@
         toolbar: '#lapPembSiswaMainGridToolbar',
         pagination: true, rownumbers: true, fit: true,
         url: '<?= createUrl() ?>&act=data',
-        singleSelect: true, pageSize:40
+        singleSelect: true, pageSize:40,
+        showFooter: true
     });
     
     $('#lapPembSiswaMainGridToolbarSearchTeller').combobox({
@@ -108,6 +109,28 @@
         });
     }
     
+    function lapPembSiswa_doSaveLapPembSiswa(){
+        var tllr = $('#lapPembSiswaMainGridToolbarSearchTeller').combobox('getValue');
+        var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
+        var jurs = $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('getValue');
+        var kels = $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('getValue');
+        var nama = $('#lapPembSiswaMainGridToolbarSearchNama').val();
+        var jnsp = $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox('getValue');
+        var stts = $('#lapPembSiswaMainGridToolbarSearchStatus').combobox('getValue');
+        var tgfr = $('#lapPembSiswaMainGridToolbarSearchTglFrom').datebox('getValue');
+        var tgto = $('#lapPembSiswaMainGridToolbarSearchTglTo').datebox('getValue');
+        window.open('<?= createUrl() ?>&act=saveLapPemb\n\
+&tllr=' + tllr + '\
+&dept=' + dept + '\
+&jurs=' + jurs + '\
+&kels=' + kels + '\
+&nama=' + nama + '\
+&jnsp=' + jnsp + '\
+&stts=' + stts + '\
+&tgfr=' + tgfr + '\
+&tgto=' + tgto
+            );
+    }
     
     function lapPembSiswa_doDeletePembSiswa(){
         var g = $('#lapPembSiswaMainGrid').datagrid('getSelected');
@@ -163,18 +186,6 @@
         } else {
             alert('pilih salah satu data terlebih dulu');
         }
-    }
-    
-    function lapPembSiswa_doSaveLapPembSiswa(){
-        var dept = $('#lapPembSiswaMainGridToolbarSearchDepartemen').combobox('getValue');
-        var jurs = $('#lapPembSiswaMainGridToolbarSearchJurusan').combobox('getValue');
-        var kels = $('#lapPembSiswaMainGridToolbarSearchKelas').combobox('getValue');
-        var nama = $('#lapPembSiswaMainGridToolbarSearchNama').val();
-        var jnsp = $('#lapPembSiswaMainGridToolbarSearchJnsPemby').combobox('getValue');
-        var stts = $('#lapPembSiswaMainGridToolbarSearchStatus').combobox('getValue');
-        var tgfr = $('#lapPembSiswaMainGridToolbarSearchTglFrom').datebox('getValue');
-        var tgto = $('#lapPembSiswaMainGridToolbarSearchTglTo').datebox('getValue');
-        window.open('<?= createUrl() ?>&act=saveLapPemb&dept=' + dept + '&jurs=' + jurs + '&kels=' + kels + '&nama=' + nama + '&jnsp=' + jnsp + '&stts=' + stts + '&tgfr=' + tgfr + '&tgto=' + tgto);
     }
     
 </script>
