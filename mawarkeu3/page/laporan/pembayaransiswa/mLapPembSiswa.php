@@ -77,7 +77,7 @@ from
 pembayaran p
 left join m_siswa s on s.ms_id = p.ms_id
 left join m_transaksi t on t.mt_id = p.mt_id
-left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((concat(p.pbyr_tahun, p.pbyr_bulan) between date_format(sh.ms_begdate, "%Y%m") and date_format(sh.ms_enddate, "%Y%m")))
 $wheres
 q;
         $queryLimit = "limit $offset, $row";
@@ -106,7 +106,7 @@ q;
     }
 
     public function getListDepartemen() {
-        return $this->fetchQuery("select distinct(ms_departemen) md_nama from m_siswa order by md_nama asc");
+        return $this->fetchQuery("select distinct(ms_departemen) md_nama from m_siswa_hist order by md_nama asc");
     }
 
     public function getListTeller() {
@@ -118,7 +118,7 @@ q;
         if(!empty($dept)){
             $where = "where ms_departemen = '$dept'";
         }
-        return $this->fetchQuery("select distinct(ms_jurusan) as mj_nama from m_siswa $where order by mj_nama asc");
+        return $this->fetchQuery("select distinct(ms_jurusan) as mj_nama from m_siswa_hist $where order by mj_nama asc");
     }
     
     public function getListJnsPemby($dept) {
@@ -145,7 +145,7 @@ order by t.mt_jenis asc");
         if(count($where) > 0){
             $wheres = "where " . implode(" and ", $where);
         }
-        return $this->fetchQuery("select distinct(ms_kelas) as mkls_nama from m_siswa $wheres order by mkls_nama asc");
+        return $this->fetchQuery("select distinct(ms_kelas) as mkls_nama from m_siswa_hist $wheres order by mkls_nama asc");
     }
     
     public function doDelPembayaran($pbyrid) {
