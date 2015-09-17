@@ -102,7 +102,7 @@ q;
             $footer_total = $elis['pbyr_total'];
         }
         $footer = array(array('mt_jenis' => 'TOTAL', 'pbyr_nominal' => $footer_total));
-        return array('rows' => $res, 'total' => $tot, 'footer' => $footer);
+        return array('rows' => $res, 'total' => $tot, 'footer' => $footer, 'q1' => $query);
     }
 
     public function getListDepartemen() {
@@ -219,7 +219,6 @@ order by t.mt_jenis asc");
         if (count($where) > 0) {
             $wheres = "where (" . implode(") and (", $where) . ")";
         }
-
         $query = <<<q
 select 
     p.pbyr_id,
@@ -239,7 +238,7 @@ from
 pembayaran p
 left join m_siswa s on s.ms_id = p.ms_id
 left join m_transaksi t on t.mt_id = p.mt_id
-left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((concat(p.pbyr_tahun, p.pbyr_bulan) between date_format(sh.ms_begdate, "%Y%m") and date_format(sh.ms_enddate, "%Y%m")))
 $wheres
 q;
 
@@ -283,7 +282,7 @@ from
     pembayaran p
     left join m_siswa s on s.ms_id = p.ms_id
     left join m_transaksi t on t.mt_id = p.mt_id
-    left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+    left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((concat(p.pbyr_tahun, p.pbyr_bulan) between date_format(sh.ms_begdate, "%Y%m") and date_format(sh.ms_enddate, "%Y%m")))
 $wheres
 q;
         $res_foot_tot = $this->fetchQuery($query_footer_total, $arrFetch);
@@ -305,6 +304,7 @@ q;
         echo "<td></td>";
         echo "</tr>";
         echo "</table>";
-    }
+    
+	}
 
 }
