@@ -13,7 +13,7 @@ select
     p.pbyr_createby
 from pembayaran p
 left join m_siswa s on s.ms_id = p.ms_id
-left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((date_format(p.pbyr_createdate, "%Y") between year(sh.ms_begdate) and year(sh.ms_enddate)) and (date_format(p.pbyr_createdate, "%m") between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+left join m_siswa_hist sh on sh.ms_id = s.ms_id and (date_format(p.pbyr_createdate, '%Y%m') between date_format(sh.ms_begdate, "%Y%m") and date_format(sh.ms_enddate, "%Y%m"))
 where p.ms_id=$msid and p.struk_id=0 and p.pbyr_deletedate is null
 order by p.pbyr_createdate desc
 limit 1
@@ -42,9 +42,9 @@ select
     p.pbyr_text,
     p.pbyr_createby
 from pembayaran p
-left join m_transaksi t on t.mt_id = p.mt_id
-left join m_siswa s on s.ms_id = p.ms_id
-left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((p.pbyr_tahun between year(sh.ms_begdate) and year(sh.ms_enddate)) and (p.pbyr_bulan between date_format(sh.ms_begdate, "%m") and date_format(sh.ms_enddate, "%m")))
+    left join m_transaksi t on t.mt_id = p.mt_id
+    left join m_siswa s on s.ms_id = p.ms_id
+    left join m_siswa_hist sh on sh.ms_id = s.ms_id and ((concat(p.pbyr_tahun, p.pbyr_bulan) between date_format(sh.ms_begdate, "%Y%m") and date_format(sh.ms_enddate, "%Y%m")))
 where p.ms_id=$msid and p.struk_id=0 and p.pbyr_deletedate is null
 order by p.mt_id asc, p.pbyr_tahun asc, p.pbyr_bulan asc
 q;
