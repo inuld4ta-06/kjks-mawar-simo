@@ -21,7 +21,7 @@
 
         $('#pembsis_div_jenisDet_inputJenis').combobox({
             valueField: 'mt_id', textField: 'mt_jenis',
-            panelWidth: 500, panelHeight: 'auto',
+            panelWidth: 500, panelHeight: 250,
             onSelect: function(i) {
                 getDataPembayaran();
                 getDefaultPembayaran();
