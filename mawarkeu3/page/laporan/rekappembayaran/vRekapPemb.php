@@ -27,9 +27,11 @@
             {field:'ms_jurusan', title:'Jurusan', width:100},
             {field:'ms_kelas', title:'Kelas', width:100},
             {field:'ms_nis', title:'No. Induk', width:80},
-            {field:'ms_nama', title:'Nama', width:270}
+            {field:'ms_nama', title:'Nama', width:270},
         ]],
         columns:[[
+            {field:'ms_alamat', title:'Alamat', width:270, rowspan: 2},
+            {field:'ms_telp_wali', title:'Telp. Wali', width:270, rowspan: 2},
             {title:'Bulan', colspan: 12}
         ],[
             {field:'pemb_07', title:'Juli', width:100},
